@@ -1,0 +1,8 @@
+{
+  "exec": "node --loader ts-node/esm ./example.ts",
+  "watch": ["src", "example.ts"],
+  "ext": "ts",
+  "ignore": ["dist", "node_modules"],
+  "legacyWatch": true,
+  "polling": true
+}

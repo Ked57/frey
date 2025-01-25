@@ -1,0 +1,62 @@
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
+import type { PrettyInfer } from "./helpers/types.ts";
+
+export type OrderField<Schema extends z.ZodObject<any>> =
+  | keyof z.infer<Schema>
+  | `-${string & keyof z.infer<Schema>}`;
+
+export type QueryParams<Schema extends z.ZodObject<any>> = {
+  filters?: (keyof z.infer<Schema>)[];
+  order?: OrderField<Schema>[];
+  search?: string;
+  limit?: number;
+  offset?: number;
+};
+
+export type Params<Schema extends z.ZodObject<any>> =
+  | QueryParams<Schema>
+  | Record<string, string | string[] | number | boolean | undefined>;
+
+export type Context = {
+  request: FastifyRequest;
+  server: FastifyInstance;
+};
+
+export type CustomRoute<Schema extends z.ZodObject<any>> = {
+  path: string;
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+  registerRoute: (
+    request: FastifyRequest,
+    reply: FastifyReply,
+    context: { server: FastifyInstance; entity: Entity<Schema> },
+  ) => Promise<void> | void;
+};
+
+export type Entity<Schema extends z.ZodObject<any>> = {
+  name: string;
+  schema: Schema;
+  customId?: string;
+  customRoutes?: CustomRoute<Schema>[];
+  findAll: (
+    params: Params<Schema>,
+    context: Context,
+  ) => Promise<PrettyInfer<z.ZodArray<Schema>>>;
+  findOne?: (param: string, context: Context) => Promise<PrettyInfer<Schema>>;
+  delete?: (params: Params<Schema>, context: Context) => Promise<void>;
+  create?: (
+    params: Params<Schema>,
+    context: Context,
+  ) => Promise<PrettyInfer<Schema>>;
+  update?: (
+    params: Params<Schema>,
+    context: Context,
+  ) => Promise<PrettyInfer<Schema>>;
+};
+
+export const defineEntity = <Schema extends z.ZodObject<any>>(
+  entity: Entity<Schema>,
+): Entity<Schema> => ({
+  ...entity,
+  schema: entity.schema,
+});
