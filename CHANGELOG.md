@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/Ked57/frey/compare/v1.0.0...v1.0.1) (2025-09-16)
+
+
+### Bug Fixes
+
+* readme ([50278d4](https://github.com/Ked57/frey/commit/50278d4f8d1ffba64eea92672ff06327b0dd71fd))
+
 # 1.0.0 (2025-09-16)
 
 
