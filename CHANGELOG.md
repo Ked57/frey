@@ -1,3 +1,10 @@
+# 1.0.0 (2025-09-16)
+
+
+### Features
+
+* initial release of Frey framework ([#1](https://github.com/Ked57/frey/issues/1)) ([6cce7be](https://github.com/Ked57/frey/commit/6cce7be71ad1bdef7440033dea588f9ac554c602))
+
 # Changelog
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
