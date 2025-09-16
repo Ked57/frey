@@ -9,9 +9,9 @@ updates:
       time: "09:00"
     open-pull-requests-limit: 10
     reviewers:
-      - "ked57"
+      - "Ked57"
     assignees:
-      - "ked57"
+      - "Ked57"
     commit-message:
       prefix: "chore"
       include: "scope"
@@ -43,9 +43,9 @@ updates:
       time: "09:00"
     open-pull-requests-limit: 5
     reviewers:
-      - "ked57"
+      - "Ked57"
     assignees:
-      - "ked57"
+      - "Ked57"
     commit-message:
       prefix: "ci"
       include: "scope"
