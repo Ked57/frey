@@ -3,14 +3,14 @@
 [![CI](https://github.com/Ked57/frey/workflows/CI/badge.svg)](https://github.com/yourusername/frey/actions)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
-[![Bun](https://img.shields.io/badge/Bun-3x%20faster-000000.svg)](https://bun.sh/)
+[![Bun](https://img.shields.io/badge/Bun-Compatible-000000.svg)](https://bun.sh/)
 
 A lightweight, entity-driven API framework built with Fastify and TypeScript. Frey provides a structured way to define entities with Zod schemas and automatically generates RESTful APIs with full type safety and support for both Node.js and Bun runtimes.
 
 ## ✨ Features
 
 - 🚀 **Entity-driven API generation** - Define entities and get full CRUD APIs automatically
-- ⚡ **Multi-runtime support** - Works with both Node.js and Bun (3x faster with Bun)
+- ⚡ **Multi-runtime support** - Works with both Node.js and Bun
 - 🔒 **Type-safe** - Built with TypeScript strict mode for maximum type safety
 - 🧪 **Well-tested** - 53 comprehensive tests across unit and integration
 - 📝 **Automatic validation** - Parameter parsing and validation with Zod
@@ -31,8 +31,7 @@ npm install frey
 ```typescript
 import { z } from "zod";
 import Fastify from "fastify";
-import { defineEntity } from "frey";
-import { startServer } from "frey";
+import { defineEntity, startServer } from "frey";
 
 // Define your Zod schema
 const userSchema = z.object({
@@ -69,9 +68,9 @@ const userEntity = defineEntity({
     return {/* single user */};
   },
   // Optional CRUD handlers
-  // create: async (params, context) => { /* create logic */ },
-  // update: async (params, context) => { /* update logic */ },
-  // delete: async (params, context) => { /* delete logic */ },
+   create: async (params, context) => { /* create logic */ },
+   update: async (params, context) => { /* update logic */ },
+   delete: async (params, context) => { /* delete logic */ },
 });
 
 // Start the server
@@ -248,7 +247,7 @@ npm run test:coverage
 
 Frey is optimized for performance:
 
-- **Bun support** - 3x faster than Node.js
+- **Bun support** - Compatible with Bun runtime
 - **Minimal overhead** - Only essential dependencies
 - **TypeScript compilation** - Zero runtime type checking overhead
 - **Fastify foundation** - One of the fastest Node.js web frameworks
@@ -296,4 +295,4 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 - Built on [Fastify](https://www.fastify.io/) - Fast and low overhead web framework
 - Powered by [Zod](https://zod.dev/) - TypeScript-first schema validation
 - Tested with [Vitest](https://vitest.dev/) - Fast unit test framework
-- Compatible with [Bun](https://bun.sh/) - Fast JavaScript runtime
+- Compatible with [Bun](https://bun.sh/) - JavaScript runtime
