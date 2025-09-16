@@ -120,7 +120,7 @@ BREAKING CHANGE: The old API has been removed
 ## Environment Variables
 
 Required secrets in GitHub repository settings:
-- `GITHUB_TOKEN` - Automatically provided by GitHub Actions
+- `GH_TOKEN` - Personal access token with `repo` scope (required for private repositories)
 - `NPM_TOKEN` - Required if publishing to npm (optional for now since `npmPublish: false`)
 
 ## Local Testing
