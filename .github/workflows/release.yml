@@ -3,19 +3,22 @@ name: Manual Release
 on:
   workflow_dispatch:
     inputs:
-      release_type:
-        description: 'Type of release'
+      tag:
+        description: 'Tag to release (e.g., v1.0.0)'
         required: true
-        default: 'patch'
-        type: choice
-        options:
-        - patch
-        - minor
-        - major
+        type: string
+      prerelease:
+        description: 'Mark as prerelease'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     
     steps:
     - name: Checkout code
@@ -24,50 +27,101 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GH_TOKEN }}
         
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '22.x'
         cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
         
     - name: Install dependencies
       run: npm ci
       
-    - name: Run tests
-      run: npm run test:run
+    - name: Build project
+      run: npm run build:dist
       
-    - name: Create manual release
+    - name: Verify tag exists
       run: |
-        # Get current version and calculate next version
-        CURRENT_VERSION=$(node -p "require('./package.json').version")
-        echo "Current version: $CURRENT_VERSION"
-        
-        # Calculate next version based on release type
-        if [ "${{ github.event.inputs.release_type }}" = "major" ]; then
-          NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print ($1+1)".0.0"}')
-        elif [ "${{ github.event.inputs.release_type }}" = "minor" ]; then
-          NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."($2+1)".0"}')
-        else
-          NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+        if ! git rev-parse "${{ github.event.inputs.tag }}" >/dev/null 2>&1; then
+          echo "Error: Tag ${{ github.event.inputs.tag }} does not exist"
+          exit 1
         fi
+        echo "Tag ${{ github.event.inputs.tag }} found"
         
-        echo "Next version: $NEXT_VERSION"
+    - name: Checkout specific tag
+      run: |
+        git checkout ${{ github.event.inputs.tag }}
+        
+    - name: Update package.json version
+      run: |
+        # Extract version from tag (remove 'v' prefix if present)
+        VERSION="${{ github.event.inputs.tag }}"
+        VERSION=${VERSION#v}
         
         # Update package.json version
-        npm version $NEXT_VERSION --no-git-tag-version
+        npm version $VERSION --no-git-tag-version
         
-        # Build the package
-        npm run build:dist
+        echo "Updated package.json to version $VERSION"
         
-        # Publish to npm
-        npm publish
+    - name: Generate changelog
+      run: |
+        # Create a basic changelog entry if CHANGELOG.md doesn't exist or is empty
+        if [ ! -f CHANGELOG.md ] || [ ! -s CHANGELOG.md ]; then
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+        fi
         
-        # Create git tag and push
-        git add package.json package-lock.json
-        git commit -m "chore: release $NEXT_VERSION"
-        git tag "v$NEXT_VERSION"
-        git push origin master
-        git push origin "v$NEXT_VERSION"
+        VERSION="${{ github.event.inputs.tag }}"
+        VERSION=${VERSION#v}
+        
+        # Add new version entry to changelog
+        TEMP_FILE=$(mktemp)
+        echo "# Changelog" > "$TEMP_FILE"
+        echo "" >> "$TEMP_FILE"
+        echo "## [$VERSION] - $(date +%Y-%m-%d)" >> "$TEMP_FILE"
+        echo "" >> "$TEMP_FILE"
+        echo "### Release" >> "$TEMP_FILE"
+        echo "- Manual release of version $VERSION" >> "$TEMP_FILE"
+        echo "" >> "$TEMP_FILE"
+        
+        # Append existing changelog content (skip first line if it's just "# Changelog")
+        if [ -f CHANGELOG.md ]; then
+          tail -n +3 CHANGELOG.md >> "$TEMP_FILE" 2>/dev/null || true
+        fi
+        
+        mv "$TEMP_FILE" CHANGELOG.md
+        
+    - name: Commit changes
+      run: |
+        git add package.json package-lock.json CHANGELOG.md
+        git commit -m "chore(release): ${{ github.event.inputs.tag }} [skip ci]"
+        
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.tag }}
+        release_name: Release ${{ github.event.inputs.tag }}
+        body_path: CHANGELOG.md
+        draft: false
+        prerelease: ${{ github.event.inputs.prerelease }}
+        
+    - name: Publish to NPM
+      run: |
+        # Extract version from tag
+        VERSION="${{ github.event.inputs.tag }}"
+        VERSION=${VERSION#v}
+        
+        # Publish to npm
+        npm publish --access public
+        
+    - name: Push changes
+      run: |
+        git push origin ${{ github.event.inputs.tag }}
+        git push origin master

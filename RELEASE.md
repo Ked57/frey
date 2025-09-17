@@ -1,133 +1,157 @@
-# Release Process
+# Release Process Documentation
 
-This document describes the release process for the Frey project using semantic-release.
+This document describes the automated release process for the Frey project, which includes both automatic prerelease versions and manual release capabilities.
 
 ## Overview
 
-Frey uses [semantic-release](https://semantic-release.gitbook.io/) for automated versioning and changelog generation. The system automatically determines the next version number based on commit messages following the [Conventional Commits](https://conventionalcommits.org/) specification.
+The release process consists of two main workflows:
 
-## Automatic Releases
+1. **Automatic Prerelease**: Triggered on every push to `master` branch
+2. **Manual Release**: Triggered manually for specific tags
 
-### Master Branch
-- **Trigger**: Every commit to the `master` branch
-- **Process**: 
-  1. CI runs tests and checks
-  2. If tests pass, semantic-release analyzes commits
-  3. If there are releasable changes, creates a new version
-  4. Updates CHANGELOG.md and package.json
-  5. Creates a GitHub release
-  6. Commits the version changes back to master
+## Automatic Prerelease Process
 
-### Beta Branch
-- **Trigger**: Every commit to the `beta` branch
-- **Process**: Creates prerelease versions (e.g., `1.0.0-beta.1`)
+### Trigger
+- **When**: Every push to the `master` branch
+- **What**: Creates prerelease versions (e.g., `1.0.0-beta.1`, `1.0.0-beta.2`)
 
-## Manual Releases
+### Workflow
+1. Runs all tests and quality checks
+2. Builds the project
+3. Analyzes commits using conventional commits
+4. Generates changelog
+5. Publishes to npm with `beta` prerelease tag
+6. Creates GitHub release as prerelease
+7. Updates package.json and commits changes
 
-Use the GitHub Actions "Manual Release" workflow:
+### Configuration
+- **Prerelease identifier**: `beta`
+- **Branch**: `master`
+- **NPM tag**: `beta` (users install with `npm install freyjs-test@beta`)
 
-1. Go to Actions tab in GitHub
-2. Select "Manual Release" workflow
-3. Click "Run workflow"
-4. Choose release type:
-   - **Patch**: Bug fixes (1.0.0 → 1.0.1)
-   - **Minor**: New features (1.0.0 → 1.1.0)
-   - **Major**: Breaking changes (1.0.0 → 2.0.0)
-   - **Prerelease**: Beta/alpha versions
+## Manual Release Process
+
+### Trigger
+- **When**: Manual trigger via GitHub Actions UI
+- **What**: Creates stable releases for specific tags
+
+### Usage
+1. Go to GitHub Actions → "Manual Release" workflow
+2. Click "Run workflow"
+3. Enter the tag name (e.g., `v1.0.0`)
+4. Choose whether to mark as prerelease
+5. Click "Run workflow"
+
+### Workflow
+1. Verifies the tag exists
+2. Checks out the specific tag
+3. Updates package.json version
+4. Generates/updates changelog
+5. Creates GitHub release
+6. Publishes to npm as stable version
+7. Pushes changes
+
+## Required Secrets
+
+Make sure these secrets are configured in your GitHub repository:
+
+- `GH_TOKEN`: GitHub token with repository permissions
+- `NPM_TOKEN`: NPM token for publishing packages
+
+## Version Numbering
+
+### Prerelease Versions (Automatic)
+- Format: `MAJOR.MINOR.PATCH-beta.N`
+- Examples: `1.0.0-beta.1`, `1.0.0-beta.2`, `1.1.0-beta.1`
+
+### Stable Versions (Manual)
+- Format: `MAJOR.MINOR.PATCH`
+- Examples: `1.0.0`, `1.1.0`, `2.0.0`
 
 ## Commit Convention
 
-Follow [Conventional Commits](https://conventionalcommits.org/) for automatic versioning:
+The project uses [Conventional Commits](https://www.conventionalcommits.org/) to determine version bumps:
 
-### Format
+- `feat:` → Minor version bump
+- `fix:` → Patch version bump
+- `BREAKING CHANGE:` → Major version bump
+- Other commits → No version bump
+
+## Files Modified During Release
+
+### Automatic Prerelease
+- `package.json` (version)
+- `package-lock.json` (version)
+- `CHANGELOG.md` (new entries)
+
+### Manual Release
+- `package.json` (version)
+- `package-lock.json` (version)
+- `CHANGELOG.md` (new entries)
+
+## NPM Package Tags
+
+- **Stable releases**: Default tag (latest)
+- **Prerelease versions**: `beta` tag
+
+Users can install specific versions:
+```bash
+# Latest stable
+npm install freyjs-test
+
+# Latest prerelease
+npm install freyjs-test@beta
+
+# Specific version
+npm install freyjs-test@1.0.0
 ```
-<type>[optional scope]: <description>
 
-[optional body]
+## GitHub Releases
 
-[optional footer(s)]
-```
+### Prerelease
+- Automatically created on every push to master
+- Marked as "prerelease"
+- Includes changelog and release notes
 
-### Types
-- `feat:` - New features (minor version bump)
-- `fix:` - Bug fixes (patch version bump)
-- `docs:` - Documentation changes (no version bump)
-- `style:` - Code style changes (no version bump)
-- `refactor:` - Code refactoring (no version bump)
-- `perf:` - Performance improvements (patch version bump)
-- `test:` - Adding or updating tests (no version bump)
-- `build:` - Build system changes (no version bump)
-- `ci:` - CI configuration changes (no version bump)
-- `chore:` - Maintenance tasks (no version bump)
-- `revert:` - Reverting changes (patch version bump)
-
-### Breaking Changes
-Use `BREAKING CHANGE:` in the footer or add `!` after the type:
-```
-feat!: remove deprecated API
-feat: add new feature
-
-BREAKING CHANGE: The old API has been removed
-```
-
-## First Release Setup
-
-1. **Prepare the repository**:
-   ```bash
-   npm run prepare-release
-   ```
-
-2. **Switch to master branch**:
-   ```bash
-   git checkout master
-   ```
-
-3. **Commit changes with conventional format**:
-   ```bash
-   git add .
-   git commit -m "feat: add semantic release system"
-   ```
-
-4. **Push to master**:
-   ```bash
-   git push origin master
-   ```
-
-5. **Monitor CI**: The GitHub Actions workflow will automatically run semantic-release
-
-## Configuration Files
-
-- `.releaserc.json` - Semantic-release configuration
-- `.github/workflows/ci.yml` - CI/CD pipeline
-- `.github/workflows/release.yml` - Manual release workflow
-- `.commitlintrc.json` - Commit message linting rules
+### Stable Release
+- Created manually for specific tags
+- Can be marked as prerelease or stable
+- Includes changelog and release notes
 
 ## Troubleshooting
 
-### No Release Created
-- Check if commits follow conventional commit format
-- Verify you're on the correct branch (master for releases)
-- Check CI logs for errors
+### Common Issues
 
-### Wrong Version Bump
-- Review commit messages for correct type prefixes
-- Use `BREAKING CHANGE:` for major version bumps
+1. **Release fails due to missing secrets**
+   - Ensure `GH_TOKEN` and `NPM_TOKEN` are configured
+   - Check token permissions
 
-### Manual Release Issues
-- Ensure GitHub Actions has necessary permissions
-- Check that NPM_TOKEN secret is configured (if publishing to npm)
+2. **NPM publish fails**
+   - Verify NPM token has publish permissions
+   - Check if version already exists
 
-## Environment Variables
+3. **GitHub release fails**
+   - Ensure GitHub token has repository write permissions
+   - Check if release already exists for the tag
 
-Required secrets in GitHub repository settings:
-- `GH_TOKEN` - Personal access token with `repo` scope (required for private repositories)
-- `NPM_TOKEN` - Required if publishing to npm (optional for now since `npmPublish: false`)
+### Manual Recovery
 
-## Local Testing
+If automatic releases fail, you can:
 
-Test semantic-release locally (dry run):
-```bash
-npx semantic-release --dry-run
-```
+1. Use the manual release workflow
+2. Manually create tags and releases
+3. Manually publish to NPM
 
-**Note**: This won't create actual releases, just shows what would happen.
+## Best Practices
+
+1. **Always test prerelease versions** before creating stable releases
+2. **Use conventional commits** for proper version bumping
+3. **Review changelog** before manual releases
+4. **Tag releases** with meaningful names (e.g., `v1.0.0`)
+5. **Keep master branch stable** - all pushes trigger prereleases
+
+## Workflow Files
+
+- `.github/workflows/ci.yml` - Contains the prerelease job
+- `.github/workflows/release.yml` - Manual release workflow
+- `.releaserc.json` - Semantic-release configuration

@@ -3,6 +3,10 @@
     {
       "name": "master",
       "prerelease": "beta"
+    },
+    {
+      "name": "main",
+      "prerelease": "beta"
     }
   ],
   "plugins": [
@@ -27,6 +31,12 @@
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],
-    "@semantic-release/github"
+    [
+      "@semantic-release/github",
+      {
+        "successComment": "🎉 This issue is included in version ${nextRelease.version} which is now available on [GitHub release](<github_release_url>) and [npm](https://www.npmjs.com/package/freyjs-test) 📦",
+        "releasedLabels": ["released on ${nextRelease.gitTag}"]
+      }
+    ]
   ]
 }
