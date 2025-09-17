@@ -44,6 +44,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     
     steps:
     - name: Checkout code
@@ -70,6 +74,16 @@ jobs:
     - name: Build project
       run: npm run build:dist
       
+    - name: Debug environment
+      run: |
+        echo "Current branch: $(git branch --show-current)"
+        echo "Git status:"
+        git status
+        echo "Remote branches:"
+        git branch -r
+        echo "Package.json version:"
+        node -p "require('./package.json').version"
+        
     - name: Run semantic-release (prerelease)
       run: npm run semantic-release
       env:
