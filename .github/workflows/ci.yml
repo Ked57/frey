@@ -40,19 +40,55 @@ jobs:
     - name: Build project
       run: npm run build:dist
 
-  prerelease:
+  sync-to-beta:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GH_TOKEN }}
+        
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Sync master to beta branch
+      run: |
+        # Check if beta branch exists
+        if git show-ref --verify --quiet refs/remotes/origin/beta; then
+          echo "Beta branch exists, updating it"
+          git checkout -B beta origin/beta
+          git merge master --no-edit
+        else
+          echo "Beta branch doesn't exist, creating it"
+          git checkout -B beta
+        fi
+        
+        # Push beta branch
+        git push origin beta
+        
+        echo "Successfully synced master to beta branch"
+
+  prerelease:
+    needs: sync-to-beta
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
       pull-requests: write
     
     steps:
-    - name: Checkout code
+    - name: Checkout beta branch
       uses: actions/checkout@v4
       with:
+        ref: beta
         fetch-depth: 0
         token: ${{ secrets.GH_TOKEN }}
         

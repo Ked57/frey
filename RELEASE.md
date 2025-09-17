@@ -17,16 +17,17 @@ The release process consists of two main workflows:
 
 ### Workflow
 1. Runs all tests and quality checks
-2. Builds the project
-3. Analyzes commits using conventional commits
-4. Generates changelog
-5. Publishes to npm with `beta` prerelease tag
-6. Creates GitHub release as prerelease
-7. Updates package.json and commits changes
+2. Syncs `master` branch to `beta` branch automatically
+3. Runs semantic-release on `beta` branch
+4. Analyzes commits using conventional commits
+5. Generates changelog
+6. Publishes to npm with `beta` prerelease tag
+7. Creates GitHub release as prerelease
+8. Updates package.json and commits changes
 
 ### Configuration
 - **Prerelease identifier**: `beta`
-- **Branch**: `master`
+- **Branch**: `beta` (automatically synced from `master`)
 - **NPM tag**: `beta` (users install with `npm install freyjs-test@beta`)
 
 ## Manual Release Process
@@ -150,8 +151,17 @@ If automatic releases fail, you can:
 4. **Tag releases** with meaningful names (e.g., `v1.0.0`)
 5. **Keep master branch stable** - all pushes trigger prereleases
 
+## Beta Branch Management
+
+The `beta` branch is automatically maintained and kept in sync with `master`:
+
+- **Automatic Sync**: Every push to `master` automatically updates the `beta` branch
+- **No Manual Maintenance**: You don't need to manually maintain the `beta` branch
+- **Prerelease Versions**: Semantic-release runs on the `beta` branch to create prerelease versions
+- **Clean Separation**: `master` stays clean while `beta` handles prerelease versions
+
 ## Workflow Files
 
-- `.github/workflows/ci.yml` - Contains the prerelease job
+- `.github/workflows/ci.yml` - Contains the sync-to-beta and prerelease jobs
 - `.github/workflows/release.yml` - Manual release workflow
 - `.releaserc.json` - Semantic-release configuration
