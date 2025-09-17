@@ -1,3 +1,15 @@
+# 1.0.0 (2025-09-17)
+
+
+### Bug Fixes
+
+* prettier formatting ([1ac315b](https://github.com/Ked57/frey/commit/1ac315b81572ce20845a5918bda27dde4f5cacaa))
+
+
+### Features
+
+* initial release of Frey framework ([#1](https://github.com/Ked57/frey/issues/1)) ([971f1bc](https://github.com/Ked57/frey/commit/971f1bc89981ae8657491f66314e11aaf0bbb9c7))
+
 # 1.0.0 (2025-09-16)
 
 
