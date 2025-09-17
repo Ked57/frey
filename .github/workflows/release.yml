@@ -1,0 +1,73 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+        - patch
+        - minor
+        - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GH_TOKEN }}
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm run test:run
+      
+    - name: Create manual release
+      run: |
+        # Get current version and calculate next version
+        CURRENT_VERSION=$(node -p "require('./package.json').version")
+        echo "Current version: $CURRENT_VERSION"
+        
+        # Calculate next version based on release type
+        if [ "${{ github.event.inputs.release_type }}" = "major" ]; then
+          NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print ($1+1)".0.0"}')
+        elif [ "${{ github.event.inputs.release_type }}" = "minor" ]; then
+          NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."($2+1)".0"}')
+        else
+          NEXT_VERSION=$(echo $CURRENT_VERSION | awk -F. '{print $1"."$2"."($3+1)}')
+        fi
+        
+        echo "Next version: $NEXT_VERSION"
+        
+        # Update package.json version
+        npm version $NEXT_VERSION --no-git-tag-version
+        
+        # Build the package
+        npm run build:dist
+        
+        # Publish to npm
+        npm publish
+        
+        # Create git tag and push
+        git add package.json package-lock.json
+        git commit -m "chore: release $NEXT_VERSION"
+        git tag "v$NEXT_VERSION"
+        git push origin master
+        git push origin "v$NEXT_VERSION"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

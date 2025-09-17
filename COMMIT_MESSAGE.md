@@ -34,7 +34,7 @@ Introduce Frey, a lightweight entity-driven API framework built with Fastify and
 ## API Examples
 
 ```typescript
-import { Frey } from 'frey.js';
+import { Frey } from 'freyjs';
 
 const app = new Frey();
 
