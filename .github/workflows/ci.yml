@@ -71,15 +71,11 @@ jobs:
         # Fetch all branches
         git fetch origin
         
-        # Check if beta branch exists on remote
-        if git show-ref --verify --quiet refs/remotes/origin/beta; then
-          echo "Beta branch exists, updating it"
-          git checkout -B beta origin/beta
-          git merge master --no-edit
-        else
-          echo "Beta branch doesn't exist, creating it from master"
-          git checkout -B beta
-        fi
+        # Always checkout beta branch (it should exist now)
+        git checkout -B beta origin/beta
+        
+        # Merge master into beta
+        git merge master --no-edit
         
         # Push beta branch
         git push origin beta
