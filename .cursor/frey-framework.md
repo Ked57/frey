@@ -130,6 +130,12 @@ it("should pass query parameters to findAll", async () => {
 - security-check: Audit + CodeQL
 ```
 
+### Git Workflow Standards
+- **ALWAYS run prettier before pushing**: `npm run format:fix`
+- **Ask before pushing**: Never push changes without explicit user approval
+- **Format check**: Ensure code passes prettier formatting before commits
+- **Pre-commit validation**: Run type-check and format:fix before any push
+
 ## Development Guidelines
 
 ### Adding New Features
