@@ -13,17 +13,20 @@ The release process consists of two main workflows:
 
 ### Trigger
 - **When**: Every push to the `master` branch
-- **What**: Creates prerelease versions (e.g., `1.0.0-beta.1`, `1.0.0-beta.2`)
+- **What**: Syncs master to beta branch, then beta branch creates prerelease versions
 
 ### Workflow
-1. Runs all tests and quality checks
-2. Syncs `master` branch to `beta` branch automatically
-3. Runs semantic-release on `beta` branch
-4. Analyzes commits using conventional commits
-5. Generates changelog
-6. Publishes to npm with `beta` prerelease tag
-7. Creates GitHub release as prerelease
-8. Updates package.json and commits changes
+1. **CI Workflow (on master push)**:
+   - Runs all tests and quality checks
+   - Syncs `master` branch to `beta` branch automatically
+   
+2. **Beta Release Workflow (on beta push)**:
+   - Runs semantic-release on `beta` branch
+   - Analyzes commits using conventional commits
+   - Generates changelog
+   - Publishes to npm with `beta` prerelease tag
+   - Creates GitHub release as prerelease
+   - Updates package.json and commits changes
 
 ### Configuration
 - **Prerelease identifier**: `beta`
@@ -162,6 +165,7 @@ The `beta` branch is automatically maintained and kept in sync with `master`:
 
 ## Workflow Files
 
-- `.github/workflows/ci.yml` - Contains the sync-to-beta and prerelease jobs
+- `.github/workflows/ci.yml` - Contains tests and sync-to-beta job (runs on master)
+- `.github/workflows/beta-release.yml` - Beta release workflow (runs on beta branch)
 - `.github/workflows/release.yml` - Manual release workflow
 - `.releaserc.json` - Semantic-release configuration
