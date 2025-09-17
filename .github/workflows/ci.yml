@@ -59,15 +59,25 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
+    - name: Debug branch info
+      run: |
+        echo "Current ref: ${{ github.ref }}"
+        echo "Current branch: $(git branch --show-current)"
+        echo "Remote branches:"
+        git branch -r
+        
     - name: Sync master to beta branch
       run: |
-        # Check if beta branch exists
+        # Fetch all branches
+        git fetch origin
+        
+        # Check if beta branch exists on remote
         if git show-ref --verify --quiet refs/remotes/origin/beta; then
           echo "Beta branch exists, updating it"
           git checkout -B beta origin/beta
           git merge master --no-edit
         else
-          echo "Beta branch doesn't exist, creating it"
+          echo "Beta branch doesn't exist, creating it from master"
           git checkout -B beta
         fi
         
@@ -97,6 +107,16 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
+    - name: Debug beta branch
+      run: |
+        echo "Current branch: $(git branch --show-current)"
+        echo "Git status:"
+        git status
+        echo "Remote branches:"
+        git branch -r
+        echo "Package.json version:"
+        node -p "require('./package.json').version"
+        
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
@@ -109,16 +129,6 @@ jobs:
       
     - name: Build project
       run: npm run build:dist
-      
-    - name: Debug environment
-      run: |
-        echo "Current branch: $(git branch --show-current)"
-        echo "Git status:"
-        git status
-        echo "Remote branches:"
-        git branch -r
-        echo "Package.json version:"
-        node -p "require('./package.json').version"
         
     - name: Run semantic-release (prerelease)
       run: npm run semantic-release
