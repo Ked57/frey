@@ -102,6 +102,11 @@ jobs:
         fetch-depth: 0
         token: ${{ secrets.GH_TOKEN }}
         
+    - name: Ensure master branch is available
+      run: |
+        # Fetch master branch to make it available for semantic-release
+        git fetch origin master:master
+        
     - name: Configure Git
       run: |
         git config --global user.name "github-actions[bot]"
