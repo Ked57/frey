@@ -28,9 +28,11 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
-    - name: Fetch all tags and check existing releases
+    - name: Fetch all branches and tags
       run: |
-        git fetch origin --tags
+        git fetch origin --all --tags
+        echo "All branches:"
+        git branch -r
         echo "All tags:"
         git tag -l
         echo "Beta tags:"
