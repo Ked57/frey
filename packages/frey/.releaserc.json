@@ -10,7 +10,7 @@
       "@semantic-release/commit-analyzer",
       {
         "preset": "conventionalcommits",
-        "path": "src",
+        "path": "packages/frey/src",
         "releaseRules": [
           { "type": "feat", "release": "minor" },
           { "type": "fix", "release": "patch" },
@@ -29,7 +29,7 @@
     [
       "@semantic-release/release-notes-generator",
       {
-        "path": "src"
+        "path": "packages/frey/src"
       }
     ],
     [
@@ -42,13 +42,13 @@
       "@semantic-release/npm",
       {
         "npmPublish": true,
-        "path": "."
+        "path": "packages/frey"
       }
     ],
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "package.json"],
+        "assets": ["packages/frey/CHANGELOG.md", "packages/frey/package.json"],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],

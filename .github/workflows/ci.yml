@@ -115,8 +115,10 @@ jobs:
         echo "Current branch: $(git branch --show-current)"
         echo "Current ref: $(git rev-parse --abbrev-ref HEAD)"
         echo "Running semantic release on master branch (creating beta)..."
-        cd packages/frey
-        npm run semantic-release
+        echo "Available branches:"
+        git branch -r
+        echo "Running semantic-release from root with frey package config..."
+        npx semantic-release --extends packages/frey/.releaserc.json
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
