@@ -1,6 +1,6 @@
 {
   "name": "frey",
-  "version": "1.2.0-master.3",
+  "version": "1.2.0-master.4",
   "description": "Entity-driven API generation framework for Fastify",
   "main": "./dist/src/index.js",
   "exports": {
