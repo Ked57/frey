@@ -84,7 +84,12 @@ jobs:
         
     - name: Run semantic-release (beta)
       if: env.SKIP_RELEASE == 'false'
-      run: npm run semantic-release
+      run: |
+        echo "Current branch: $(git branch --show-current)"
+        echo "Current ref: $(git rev-parse --abbrev-ref HEAD)"
+        echo "Running semantic release on beta branch..."
+        npm run semantic-release
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        GITHUB_REF: refs/heads/beta
