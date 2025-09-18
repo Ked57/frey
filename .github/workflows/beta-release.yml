@@ -40,6 +40,12 @@ jobs:
         echo "Latest beta tag:"
         git tag -l | grep beta | tail -1 || echo "No beta tags found"
         
+    - name: Create local master branch reference
+      run: |
+        git branch master origin/master || echo "Master branch already exists"
+        echo "Local branches:"
+        git branch -a
+        
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
