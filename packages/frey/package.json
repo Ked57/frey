@@ -11,14 +11,14 @@
   "files": [
     "dist/src/**/*",
     "dist/package.json",
-    "README.md",
-    "LICENSE"
+    "dist/README.md",
+    "dist/LICENSE"
   ],
   "scripts": {
     "dev:nowatch": "node --loader ts-node/esm ./example.ts",
     "dev": "nodemon",
-    "build": "tsc --outDir dist --declaration --declarationMap",
-    "build:dist": "tsc --outDir dist --declaration --declarationMap",
+    "build": "tsc --outDir dist --declaration --declarationMap && cp ../../README.md dist/ && cp ../../LICENSE dist/",
+    "build:dist": "tsc --outDir dist --declaration --declarationMap && cp ../../README.md dist/ && cp ../../LICENSE dist/",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
