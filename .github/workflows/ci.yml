@@ -118,7 +118,11 @@ jobs:
         echo "Available branches:"
         git branch -r
         echo "Running semantic-release from root..."
-        npx semantic-release
+        echo "Current directory: $(pwd)"
+        echo "Config file exists: $(ls -la .releaserc.json)"
+        echo "Config content:"
+        cat .releaserc.json
+        npx semantic-release --config .releaserc.json
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
