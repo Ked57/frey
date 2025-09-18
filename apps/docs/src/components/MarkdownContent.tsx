@@ -6,68 +6,29 @@ import CodeMirror from '@uiw/react-codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { json } from '@codemirror/lang-json';
 import { markdown } from '@codemirror/lang-markdown';
+import { tokyoNightStorm } from '@uiw/codemirror-theme-tokyo-night-storm';
 import { EditorView } from '@codemirror/view';
 import { useState } from 'react';
 
-// Tokyo Night Storm theme
-const tokyoNightStormTheme = EditorView.theme({
-  '&': {
-    backgroundColor: '#1a1b26',
-    color: '#c0caf5',
-  },
+// Custom theme extension to add padding and fix async keyword color
+const tokyoNightStormWithPadding = EditorView.theme({
   '.cm-content': {
-    backgroundColor: '#1a1b26',
-    color: '#c0caf5',
+    padding: '1rem',
   },
-  '.cm-focused': {
-    outline: 'none',
+  // Force all keywords to be purple, including async
+  '.cm-keyword': { 
+    color: '#bb9af7 !important',
   },
-  '.cm-editor': {
-    backgroundColor: '#1a1b26',
+  '.cm-token.cm-keyword': { 
+    color: '#bb9af7 !important',
   },
-  '.cm-scroller': {
-    backgroundColor: '#1a1b26',
+  // Target specific token types that might be used for async
+  '.cm-token[data-token="async"]': { 
+    color: '#bb9af7 !important',
   },
-  '.cm-gutters': {
-    backgroundColor: '#1a1b26',
-    border: 'none',
+  '.cm-token[data-token="await"]': { 
+    color: '#bb9af7 !important',
   },
-  '.cm-line': {
-    color: '#c0caf5',
-  },
-  '.cm-cursor': {
-    borderLeft: '1px solid #c0caf5',
-  },
-  '.cm-selectionBackground': {
-    backgroundColor: '#2d3748',
-  },
-  '.cm-activeLine': {
-    backgroundColor: 'transparent',
-  },
-  '.cm-activeLineGutter': {
-    backgroundColor: 'transparent',
-  },
-  // Syntax highlighting colors
-  '.cm-keyword': { color: '#bb9af7' },
-  '.cm-string': { color: '#9ece6a' },
-  '.cm-number': { color: '#ff9e64' },
-  '.cm-comment': { color: '#565f89', fontStyle: 'italic' },
-  '.cm-variable': { color: '#a9b1d6' },
-  '.cm-function': { color: '#7aa2f7' },
-  '.cm-property': { color: '#9ece6a' },
-  '.cm-operator': { color: '#7aa2f7' },
-  '.cm-tag': { color: '#f7768e' },
-  '.cm-attribute': { color: '#e0af68' },
-  '.cm-builtin': { color: '#bb9af7' },
-  '.cm-type': { color: '#e0af68' },
-  '.cm-atom': { color: '#bb9af7' },
-  '.cm-def': { color: '#7aa2f7' },
-  '.cm-meta': { color: '#565f89' },
-  '.cm-qualifier': { color: '#e0af68' },
-  '.cm-variable-2': { color: '#a9b1d6' },
-  '.cm-variable-3': { color: '#a9b1d6' },
-  '.cm-bracket': { color: '#a9b1d6' },
-  '.cm-punctuation': { color: '#a9b1d6' },
 }, { dark: true });
 
 // Copy button component
@@ -87,7 +48,7 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="absolute top-2 right-2 px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors z-10"
+      className="absolute top-3 right-3 px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-md transition-colors z-10 border border-gray-600"
       title={copied ? 'Copied!' : 'Copy to clipboard'}
     >
       {copied ? '✓ Copied' : 'Copy'}
@@ -124,6 +85,10 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
                   case 'markdown':
                   case 'md':
                     return markdown();
+                  case 'bash':
+                  case 'shell':
+                  case 'sh':
+                    return javascript(); // Use JavaScript highlighting for shell commands
                   default:
                     return javascript(); // fallback
                 }
@@ -136,7 +101,8 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
                   <CopyButton text={codeText} />
                   <CodeMirror
                     value={codeText}
-                    extensions={[getLanguageExtension(language), tokyoNightStormTheme]}
+                    extensions={[getLanguageExtension(language), tokyoNightStormWithPadding]}
+                    theme={tokyoNightStorm}
                     editable={false}
                     basicSetup={{
                       lineNumbers: false,

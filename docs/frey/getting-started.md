@@ -25,7 +25,7 @@ Frey is a lightweight, entity-driven API framework built with Fastify and TypeSc
 ## Installation
 
 ```bash
-npm install frey
+npm install frey fastify
 ```
 
 ## Your First API
