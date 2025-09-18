@@ -17,7 +17,7 @@ Frey is a lightweight, entity-driven API framework built with Fastify and TypeSc
 - 🚀 **Entity-driven API generation** - Define entities and get full CRUD APIs automatically
 - ⚡ **Multi-runtime support** - Works with both Node.js and Bun
 - 🔒 **Type-safe** - Built with TypeScript strict mode for maximum type safety
-- 🧪 **Well-tested** - 53 comprehensive tests across unit and integration
+- 🧪 **Well-tested** - Comprehensive tests across unit and integration
 - 📝 **Automatic validation** - Parameter parsing and validation with Zod
 - 🛠️ **Custom routes** - Extend generated APIs with custom route handlers
 - 📦 **Minimal dependencies** - Only essential dependencies (Fastify + Zod)
