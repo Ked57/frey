@@ -28,13 +28,6 @@
       }
     ],
     [
-      "@semantic-release/release-notes-generator",
-      {
-        "path": "packages/frey/src",
-        "configFile": ".releaserc.json"
-      }
-    ],
-    [
       "@semantic-release/changelog",
       {
         "changelogFile": "CHANGELOG.md"
