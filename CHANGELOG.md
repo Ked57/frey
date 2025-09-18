@@ -1,3 +1,11 @@
+## [1.1.1](https://github.com/Ked57/frey/compare/v1.1.0...v1.1.1) (2025-09-18)
+
+
+### Bug Fixes
+
+* beta-release workflow should trigger on master, not beta ([874182c](https://github.com/Ked57/frey/commit/874182cae83045984323e5f4deec6aff3fb5632f))
+* force semantic release to run as beta branch ([0dff466](https://github.com/Ked57/frey/commit/0dff466dbd30e341e7168155ac0272312612676b))
+
 # [1.1.0](https://github.com/Ked57/frey/compare/v1.0.0...v1.1.0) (2025-09-18)
 
 
