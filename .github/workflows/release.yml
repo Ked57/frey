@@ -2,6 +2,20 @@ name: Manual Release
 
 on:
   workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to release from'
+        required: false
+        default: 'beta'
+        type: choice
+        options:
+        - master
+        - beta
+      promote_beta:
+        description: 'Promote latest beta to stable (ignore commit analysis)'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   release:
@@ -14,6 +28,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.inputs.branch || 'beta' }}
         fetch-depth: 0
         token: ${{ secrets.GH_TOKEN }}
         
@@ -35,7 +50,35 @@ jobs:
       run: npm run build:dist
       
     - name: Run semantic-release (manual)
-      run: npm run semantic-release
+      run: |
+        if [ "${{ github.event.inputs.promote_beta }}" = "true" ]; then
+          echo "Promoting beta to stable release..."
+          # Get the latest beta version
+          LATEST_BETA=$(npm view freyjs-test@beta version 2>/dev/null || echo "1.0.0-beta.1")
+          echo "Latest beta version: $LATEST_BETA"
+          
+          # Extract base version (remove -beta.X)
+          BASE_VERSION=$(echo $LATEST_BETA | sed 's/-beta\.[0-9]*$//')
+          echo "Promoting to stable version: $BASE_VERSION"
+          
+          # Update package.json to the stable version
+          npm version $BASE_VERSION --no-git-tag-version
+          
+          # Create and push the tag
+          git add package.json package-lock.json
+          git commit -m "chore(release): $BASE_VERSION [skip ci]"
+          git tag "v$BASE_VERSION"
+          git push origin "v$BASE_VERSION"
+          git push origin ${{ github.event.inputs.branch || 'beta' }}
+          
+          # Publish to npm as stable
+          npm publish --access public
+          
+          echo "Successfully promoted $LATEST_BETA to $BASE_VERSION"
+        else
+          echo "Running normal semantic-release..."
+          npm run semantic-release
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
