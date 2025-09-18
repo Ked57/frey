@@ -29,10 +29,9 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
-    - name: Fetch all tags and branches
+    - name: Fetch all tags
       run: |
-        git fetch origin --tags
-        git fetch origin --all
+        git fetch --tags
         echo "Available beta tags:"
         git tag -l | grep beta || echo "No beta tags found"
         echo "Latest beta tag:"
