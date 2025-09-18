@@ -107,9 +107,6 @@ jobs:
         git tag $STABLE_TAG
         git push origin $STABLE_TAG
         
-        # Push the commit to master
-        git push origin master
-        
         # Use semantic-release to publish (this will handle npm publishing properly)
         npx semantic-release
         
