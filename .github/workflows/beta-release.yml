@@ -30,7 +30,7 @@ jobs:
         
     - name: Fetch all branches and tags
       run: |
-        git fetch origin --all --tags
+        git fetch --all --tags
         echo "All branches:"
         git branch -r
         echo "All tags:"
