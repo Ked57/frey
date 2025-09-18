@@ -74,10 +74,19 @@ jobs:
         # Always checkout beta branch (it should exist now)
         git checkout -B beta origin/beta
         
-        # Rebase beta onto master (cleaner history)
-        git rebase master
+        # Check if beta is already up to date with master
+        if git merge-base --is-ancestor master beta; then
+          echo "Beta is already up to date with master"
+          # Create an empty commit to trigger beta-release workflow
+          git commit --allow-empty -m "chore: trigger beta release [skip ci]"
+        else
+          echo "Rebasing beta onto master..."
+          # Rebase beta onto master (cleaner history)
+          git rebase master
+        fi
         
         # Push beta branch (force push needed for rebase)
+        # Use --force-with-lease to ensure we don't overwrite unexpected changes
         git push origin beta --force-with-lease
         
         echo "Successfully synced master to beta branch with rebase"
