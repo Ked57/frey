@@ -95,6 +95,23 @@ on:
 - **Changelog generation** from commits
 - **Release notes** with breaking changes
 
+### Semantic Release Configuration
+**CRITICAL**: Beta branch configuration must use `"prerelease": true`, NOT `"prerelease": "beta"`
+
+```json
+{
+  "branches": [
+    "master",
+    {
+      "name": "beta",
+      "prerelease": true  // ✅ CORRECT - creates v1.0.0-beta.1
+    }
+  ]
+}
+```
+
+❌ **WRONG**: `"prerelease": "beta"` - This creates regular releases instead of beta releases!
+
 ## Environment Configuration
 
 ### Required Secrets
