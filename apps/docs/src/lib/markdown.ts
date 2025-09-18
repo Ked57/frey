@@ -38,7 +38,7 @@ export async function getDocData(id: string): Promise<DocData> {
   };
 }
 
-export function getAllDocs(): DocData[] {
+export async function getAllDocs(): Promise<DocData[]> {
   const fileNames = fs.readdirSync(docsDirectory);
   const allDocsData = fileNames
     .filter((fileName) => fileName.endsWith('.md'))
@@ -47,7 +47,7 @@ export function getAllDocs(): DocData[] {
       const fullPath = path.join(docsDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, 'utf8');
       const matterResult = matter(fileContents);
-      
+
       return {
         id,
         content: '', // We'll load content when needed

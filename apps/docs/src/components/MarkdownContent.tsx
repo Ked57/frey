@@ -2,23 +2,11 @@
 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-
-// Custom Tokyo Night Storm theme based on vscDarkPlus
-const tokyoNightStormTheme = {
-  ...vscDarkPlus,
-  'pre[class*="language-"]': {
-    ...vscDarkPlus['pre[class*="language-"]'],
-    backgroundColor: '#1a1b26', // Tokyo Night Storm background
-    color: '#c0caf5', // Lighter text for better contrast
-  },
-  'code[class*="language-"]': {
-    ...vscDarkPlus['code[class*="language-"]'],
-    backgroundColor: '#1a1b26', // Tokyo Night Storm background
-    color: '#c0caf5', // Lighter text for better contrast
-  },
-};
+import CodeMirror from '@uiw/react-codemirror';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { javascript } from '@codemirror/lang-javascript';
+import { json } from '@codemirror/lang-json';
+import { markdown } from '@codemirror/lang-markdown';
 
 
 interface MarkdownContentProps {
@@ -36,21 +24,49 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
             const language = match ? match[1] : '';
 
             if (language) {
+              // Map language names to CodeMirror extensions
+              const getLanguageExtension = (lang: string) => {
+                switch (lang) {
+                  case 'javascript':
+                  case 'js':
+                    return javascript();
+                  case 'typescript':
+                  case 'ts':
+                    return javascript();
+                  case 'json':
+                    return json();
+                  case 'markdown':
+                  case 'md':
+                    return markdown();
+                  default:
+                    return javascript(); // fallback
+                }
+              };
+
               return (
-                <SyntaxHighlighter
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  style={tokyoNightStormTheme as any}
-                  language={language}
-                  PreTag="div"
-                  className="rounded-lg border border-gray-700 dark:border-gray-600"
-                  customStyle={{
-                    margin: '1rem 0',
-                    fontSize: '0.875rem',
-                    lineHeight: '1.5',
-                  }}
-                >
-                  {String(children).replace(/\n$/, '')}
-                </SyntaxHighlighter>
+                <div className="my-4 rounded-lg border border-gray-700 dark:border-gray-600 overflow-hidden">
+                  <CodeMirror
+                    value={String(children).replace(/\n$/, '')}
+                    extensions={[getLanguageExtension(language)]}
+                    theme={oneDark}
+                    editable={false}
+                    basicSetup={{
+                      lineNumbers: false,
+                      foldGutter: false,
+                      dropCursor: false,
+                      allowMultipleSelections: false,
+                      indentOnInput: false,
+                      bracketMatching: false,
+                      closeBrackets: false,
+                      autocompletion: false,
+                      highlightSelectionMatches: false,
+                    }}
+                    style={{
+                      fontSize: '0.875rem',
+                      lineHeight: '1.5',
+                    }}
+                  />
+                </div>
               );
             }
 

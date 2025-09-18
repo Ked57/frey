@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { getAllDocs } from '@/lib/markdown';
 
-export default function DocsPage() {
-  const docs = getAllDocs();
+export default async function DocsPage() {
+  const docs = await getAllDocs();
 
   return (
     <div className="space-y-8">
