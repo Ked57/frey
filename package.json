@@ -19,6 +19,8 @@
     "type-check": "turbo run type-check",
     "audit": "turbo run audit",
     "dev": "turbo run dev",
+    "dev:docs": "cd apps/docs && npm run dev",
+    "build:docs": "cd apps/docs && npm run build",
     "clean": "turbo run clean",
     "semantic-release": "semantic-release"
   },

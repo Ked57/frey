@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -12,18 +14,18 @@ export default function Home() {
           </p>
 
           <div className="flex gap-4 justify-center mb-16">
-            <a
+            <Link
               href="/docs"
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
               Get Started
-            </a>
-            <a
-              href="/docs/api"
+            </Link>
+            <Link
+              href="/docs/api-reference"
               className="bg-white hover:bg-gray-50 text-gray-900 font-semibold py-3 px-6 rounded-lg border border-gray-300 transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-white dark:border-gray-600"
             >
               API Reference
-            </a>
+            </Link>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
