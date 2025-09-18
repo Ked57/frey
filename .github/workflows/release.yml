@@ -99,7 +99,7 @@ jobs:
         npm version $STABLE_VERSION --no-git-tag-version
         
         # Create and push the stable tag
-        git add package.json package-lock.json
+        git add package.json
         git commit -m "chore(release): $STABLE_TAG [skip ci]"
         git tag $STABLE_TAG
         git push origin $STABLE_TAG
