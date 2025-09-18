@@ -89,6 +89,15 @@ jobs:
         
     - name: Check if release is needed
       run: |
+        # Check if there are changes to the frey package
+        if git diff --name-only HEAD~1 HEAD | grep -q "^packages/frey/"; then
+          echo "Changes detected in packages/frey/. Proceeding with release check."
+          FREY_CHANGED=true
+        else
+          echo "No changes detected in packages/frey/. Skipping release."
+          FREY_CHANGED=false
+        fi
+        
         # Get the latest beta tag
         LATEST_BETA_TAG=$(git tag -l | grep beta | tail -1 || echo "")
         echo "Latest beta tag: $LATEST_BETA_TAG"
@@ -105,13 +114,21 @@ jobs:
           if [ "$CURRENT_COMMIT" = "$TAG_COMMIT" ]; then
             echo "Current commit already has a beta tag. Skipping release."
             echo "SKIP_RELEASE=true" >> $GITHUB_ENV
-          else
-            echo "Current commit is new. Proceeding with release."
+          elif [ "$FREY_CHANGED" = "true" ]; then
+            echo "Current commit is new and has frey changes. Proceeding with release."
             echo "SKIP_RELEASE=false" >> $GITHUB_ENV
+          else
+            echo "Current commit is new but no frey changes. Skipping release."
+            echo "SKIP_RELEASE=true" >> $GITHUB_ENV
           fi
         else
-          echo "No beta tags found. Proceeding with release."
-          echo "SKIP_RELEASE=false" >> $GITHUB_ENV
+          if [ "$FREY_CHANGED" = "true" ]; then
+            echo "No beta tags found but frey changes detected. Proceeding with release."
+            echo "SKIP_RELEASE=false" >> $GITHUB_ENV
+          else
+            echo "No beta tags found and no frey changes. Skipping release."
+            echo "SKIP_RELEASE=true" >> $GITHUB_ENV
+          fi
         fi
         
     - name: Run semantic-release (beta)
