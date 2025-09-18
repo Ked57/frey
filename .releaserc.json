@@ -31,7 +31,14 @@
       "@semantic-release/npm",
       {
         "npmPublish": true,
-        "path": "packages/frey"
+        "pkgRoot": "packages/frey"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["packages/frey/package.json"],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],
     "@semantic-release/github"
