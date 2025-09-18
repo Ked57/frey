@@ -71,13 +71,7 @@ jobs:
         # Fetch all branches
         git fetch origin
         
-        # Always checkout beta branch (it should exist now)
-        git checkout -B beta origin/beta
+        # Force push master to beta branch (overwrites beta completely)
+        git push origin master:beta --force
         
-        # Merge master into beta (creates merge commit but ensures triggers work)
-        git merge master --no-edit -m "chore: sync master to beta branch - trigger beta release"
-        
-        # Push beta branch
-        git push origin beta
-        
-        echo "Successfully synced master to beta branch with merge"
+        echo "Successfully force-pushed master to beta branch - no conflicts!"
