@@ -60,7 +60,7 @@ jobs:
         if [ "${{ github.event.inputs.promote_beta }}" = "true" ]; then
           echo "Promoting beta to stable release..."
           # Get the latest beta version
-          LATEST_BETA=$(npm view freyjs-test@beta version 2>/dev/null || echo "1.0.0-beta.1")
+          LATEST_BETA=$(npm view frey@beta version 2>/dev/null || echo "1.0.0-beta.1")
           echo "Latest beta version: $LATEST_BETA"
           
           # Extract base version (remove -beta.X)

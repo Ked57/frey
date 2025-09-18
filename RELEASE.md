@@ -31,7 +31,7 @@ The release process consists of two main workflows:
 ### Configuration
 - **Prerelease identifier**: `beta`
 - **Branch**: `beta` (automatically synced from `master`)
-- **NPM tag**: `beta` (users install with `npm install freyjs-test@beta`)
+- **NPM tag**: `beta` (users install with `npm install frey@beta`)
 
 ## Manual Release Process
 
@@ -101,13 +101,13 @@ The project uses [Conventional Commits](https://www.conventionalcommits.org/) to
 Users can install specific versions:
 ```bash
 # Latest stable
-npm install freyjs-test
+npm install frey
 
 # Latest prerelease
-npm install freyjs-test@beta
+npm install frey@beta
 
 # Specific version
-npm install freyjs-test@1.0.0
+npm install frey@1.0.0
 ```
 
 ## GitHub Releases

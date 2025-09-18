@@ -23,7 +23,7 @@ A lightweight, entity-driven API framework built with Fastify and TypeScript. Fr
 ### Installation
 
 ```bash
-npm install freyjs-test
+npm install frey
 ```
 
 ### Basic Usage
@@ -31,7 +31,7 @@ npm install freyjs-test
 ```typescript
 import { z } from "zod";
 import Fastify from "fastify";
-import { defineEntity, startServer } from "freyjs-test";
+import { defineEntity, startServer } from "frey";
 
 // Define your Zod schema
 const userSchema = z.object({
