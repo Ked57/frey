@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/Ked57/frey/compare/v1.0.0...v1.1.0) (2025-09-18)
+
+
+### Features
+
+* migrate to turborepo and add a docs application ([#4](https://github.com/Ked57/frey/issues/4)) ([14b4c46](https://github.com/Ked57/frey/commit/14b4c468f75e3287c93538309310a2952864fcfc))
+
 # Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
