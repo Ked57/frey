@@ -49,6 +49,7 @@ jobs:
     - name: Build project
       run: npm run build:dist
       
+      
     - name: Run semantic-release (manual)
       run: |
         if [ "${{ github.event.inputs.promote_beta }}" = "true" ]; then
@@ -71,8 +72,8 @@ jobs:
           git push origin "v$BASE_VERSION"
           git push origin ${{ github.event.inputs.branch || 'beta' }}
           
-          # Publish to npm as stable
-          npm publish --access public
+          # Publish to npm as stable using semantic-release
+          npm run semantic-release
           
           echo "Successfully promoted $LATEST_BETA to $BASE_VERSION"
         else

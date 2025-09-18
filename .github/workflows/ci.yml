@@ -74,10 +74,10 @@ jobs:
         # Always checkout beta branch (it should exist now)
         git checkout -B beta origin/beta
         
-        # Merge master into beta
-        git merge master --no-edit
+        # Rebase beta onto master (cleaner history)
+        git rebase master
         
-        # Push beta branch
-        git push origin beta
+        # Push beta branch (force push needed for rebase)
+        git push origin beta --force-with-lease
         
-        echo "Successfully synced master to beta branch"
+        echo "Successfully synced master to beta branch with rebase"
