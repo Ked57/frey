@@ -40,53 +40,17 @@ jobs:
     - name: Build packages
       run: npm run build
 
-  sync-to-beta:
+  release:
     needs: test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
-    permissions:
-      contents: write
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GH_TOKEN }}
-        
-    - name: Configure Git
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        
-    - name: Debug branch info
-      run: |
-        echo "Current ref: ${{ github.ref }}"
-        echo "Current branch: $(git branch --show-current)"
-        echo "Remote branches:"
-        git branch -r
-        
-    - name: Sync master to beta branch
-      run: |
-        # Fetch all branches
-        git fetch origin
-        
-        # Force push master to beta branch (overwrites beta completely)
-        git push origin master:beta --force
-        
-        echo "Successfully force-pushed master to beta branch - no conflicts!"
-
-  beta-release:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/beta'
     permissions:
       contents: write
       issues: write
       pull-requests: write
     
     steps:
-    - name: Checkout beta branch
+    - name: Checkout master branch
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -108,12 +72,6 @@ jobs:
         git tag -l | grep beta || echo "No beta tags found"
         echo "Latest beta tag:"
         git tag -l | grep beta | tail -1 || echo "No beta tags found"
-        
-    - name: Create local master branch reference
-      run: |
-        git branch master origin/master || echo "Master branch already exists"
-        echo "Local branches:"
-        git branch -a
         
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -156,9 +114,10 @@ jobs:
       run: |
         echo "Current branch: $(git branch --show-current)"
         echo "Current ref: $(git rev-parse --abbrev-ref HEAD)"
-        echo "Running semantic release on beta branch..."
+        echo "Running semantic release on master branch (creating beta)..."
+        cd packages/frey
         npm run semantic-release
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        GITHUB_REF: refs/heads/beta
+        GITHUB_REF: refs/heads/master

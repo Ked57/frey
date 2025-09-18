@@ -3,19 +3,11 @@ name: Manual Release
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch to release from'
-        required: false
-        default: 'beta'
-        type: choice
-        options:
-        - master
-        - beta
-      promote_beta:
-        description: 'Promote latest beta to stable (ignore commit analysis)'
-        required: false
-        default: false
-        type: boolean
+      beta_tag:
+        description: 'Beta tag to promote to stable (e.g., v1.1.0-beta.1) or "latest" for most recent'
+        required: true
+        type: string
+        default: 'latest'
 
 jobs:
   release:
@@ -28,7 +20,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: ${{ github.event.inputs.branch || 'beta' }}
+        ref: master
         fetch-depth: 0
         token: ${{ secrets.GH_TOKEN }}
         
@@ -37,10 +29,14 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         
-    - name: Fetch all tags
+    - name: Fetch all tags and branches
       run: |
         git fetch origin --tags
-        git tag -l
+        git fetch origin --all
+        echo "Available beta tags:"
+        git tag -l | grep beta || echo "No beta tags found"
+        echo "Latest beta tag:"
+        git tag -l | grep beta | tail -1 || echo "No beta tags found"
         
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -55,36 +51,65 @@ jobs:
       run: npm run build
       
       
-    - name: Run semantic-release (manual)
+    - name: Determine beta tag to promote
       run: |
-        if [ "${{ github.event.inputs.promote_beta }}" = "true" ]; then
-          echo "Promoting beta to stable release..."
-          # Get the latest beta version
-          LATEST_BETA=$(npm view frey@beta version 2>/dev/null || echo "1.0.0-beta.1")
-          echo "Latest beta version: $LATEST_BETA"
-          
-          # Extract base version (remove -beta.X)
-          BASE_VERSION=$(echo $LATEST_BETA | sed 's/-beta\.[0-9]*$//')
-          echo "Promoting to stable version: $BASE_VERSION"
-          
-          # Update package.json to the stable version
-          npm version $BASE_VERSION --no-git-tag-version
-          
-          # Create and push the tag
-          git add package.json package-lock.json
-          git commit -m "chore(release): $BASE_VERSION [skip ci]"
-          git tag "v$BASE_VERSION"
-          git push origin "v$BASE_VERSION"
-          git push origin ${{ github.event.inputs.branch || 'beta' }}
-          
-          # Publish to npm as stable using semantic-release
-          npm run semantic-release
-          
-          echo "Successfully promoted $LATEST_BETA to $BASE_VERSION"
+        if [ "${{ github.event.inputs.beta_tag }}" = "latest" ]; then
+          # Get the latest beta tag
+          BETA_TAG=$(git tag -l | grep beta | tail -1)
+          if [ -z "$BETA_TAG" ]; then
+            echo "No beta tags found!"
+            exit 1
+          fi
+          echo "Using latest beta tag: $BETA_TAG"
         else
-          echo "Running normal semantic-release..."
-          npm run semantic-release
+          BETA_TAG="${{ github.event.inputs.beta_tag }}"
+          echo "Using specified beta tag: $BETA_TAG"
         fi
+        
+        # Validate the tag exists
+        if ! git tag -l | grep -q "^$BETA_TAG$"; then
+          echo "Tag $BETA_TAG does not exist!"
+          echo "Available beta tags:"
+          git tag -l | grep beta
+          exit 1
+        fi
+        
+        # Extract stable version from beta tag (remove -beta.X)
+        STABLE_VERSION=$(echo $BETA_TAG | sed 's/^v//' | sed 's/-beta\.[0-9]*$//')
+        STABLE_TAG="v$STABLE_VERSION"
+        
+        echo "BETA_TAG=$BETA_TAG" >> $GITHUB_ENV
+        echo "STABLE_VERSION=$STABLE_VERSION" >> $GITHUB_ENV
+        echo "STABLE_TAG=$STABLE_TAG" >> $GITHUB_ENV
+        
+        echo "Will promote $BETA_TAG to $STABLE_TAG"
+        
+    - name: Checkout beta tag
+      run: |
+        echo "Checking out beta tag: $BETA_TAG"
+        git checkout $BETA_TAG
+        
+    - name: Promote beta to stable
+      run: |
+        echo "Promoting $BETA_TAG to stable release $STABLE_TAG"
+        
+        # Change to the frey package directory
+        cd packages/frey
+        
+        # Update package.json to the stable version
+        npm version $STABLE_VERSION --no-git-tag-version
+        
+        # Create and push the stable tag
+        git add package.json package-lock.json
+        git commit -m "chore(release): $STABLE_TAG [skip ci]"
+        git tag $STABLE_TAG
+        git push origin $STABLE_TAG
+        
+        # Use semantic-release to publish (this will handle npm publishing properly)
+        npm run semantic-release
+        
+        echo "Successfully promoted $BETA_TAG to $STABLE_TAG"
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        GITHUB_REF: refs/heads/master

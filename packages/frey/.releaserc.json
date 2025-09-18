@@ -1,8 +1,7 @@
 {
   "branches": [
-    "master",
     {
-      "name": "beta",
+      "name": "master",
       "prerelease": true
     }
   ],
@@ -11,7 +10,7 @@
       "@semantic-release/commit-analyzer",
       {
         "preset": "conventionalcommits",
-        "path": "packages/frey/src",
+        "path": "src",
         "releaseRules": [
           { "type": "feat", "release": "minor" },
           { "type": "fix", "release": "patch" },
@@ -30,7 +29,7 @@
     [
       "@semantic-release/release-notes-generator",
       {
-        "path": "packages/frey/src"
+        "path": "src"
       }
     ],
     [
@@ -43,13 +42,13 @@
       "@semantic-release/npm",
       {
         "npmPublish": true,
-        "path": "packages/frey"
+        "path": "."
       }
     ],
     [
       "@semantic-release/git",
       {
-        "assets": ["CHANGELOG.md", "packages/frey/package.json"],
+        "assets": ["CHANGELOG.md", "package.json"],
         "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
       }
     ],
