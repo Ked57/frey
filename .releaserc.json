@@ -30,7 +30,8 @@
     [
       "@semantic-release/release-notes-generator",
       {
-        "path": "packages/frey/src"
+        "path": "packages/frey/src",
+        "configFile": ".releaserc.json"
       }
     ],
     [
