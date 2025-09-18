@@ -1,3 +1,10 @@
+# [1.0.0-beta.3](https://github.com/Ked57/frey/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2025-09-18)
+
+
+### Features
+
+* add beta promotion to manual release workflow ([c76c1b9](https://github.com/Ked57/frey/commit/c76c1b92385cdf16c1fef34255fced6e9cf12973))
+
 # [1.0.0-beta.2](https://github.com/Ked57/frey/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-09-18)
 
 
