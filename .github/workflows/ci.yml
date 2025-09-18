@@ -2,6 +2,11 @@ name: CI
 
 on:
   push:
+    branches: [master]
+    paths:
+      - 'packages/frey/**'
+      - '.github/workflows/ci.yml'
+      - '.releaserc.json'
   pull_request:
 
 jobs:
