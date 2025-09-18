@@ -135,6 +135,9 @@ it("should pass query parameters to findAll", async () => {
 - **Ask before pushing**: Never push changes without explicit user approval
 - **Format check**: Ensure code passes prettier formatting before commits
 - **Pre-commit validation**: Run type-check and format:fix before any push
+- **NEVER modify beta branch directly**: Beta branch is managed by CI only
+- **Demand confirmation for beta changes**: Always ask for explicit permission before any beta branch modifications
+- **Master-first workflow**: All changes must be committed to master first, then CI syncs to beta
 
 ## Development Guidelines
 
