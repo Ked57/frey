@@ -3,7 +3,7 @@
     "master",
     {
       "name": "beta",
-      "prerelease": "beta"
+      "prerelease": true
     }
   ],
   "plugins": [
