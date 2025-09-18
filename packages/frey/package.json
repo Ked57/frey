@@ -1,6 +1,6 @@
 {
   "name": "frey",
-  "version": "1.0.0",
+  "version": "1.1.2",
   "description": "Entity-driven API generation framework for Fastify",
   "main": "./dist/src/index.js",
   "exports": {
@@ -29,7 +29,13 @@
     "audit": "npm audit --audit-level=moderate",
     "clean": "rm -rf dist"
   },
-  "keywords": ["fastify", "api", "framework", "entity", "crud"],
+  "keywords": [
+    "fastify",
+    "api",
+    "framework",
+    "entity",
+    "crud"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
