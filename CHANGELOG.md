@@ -1,3 +1,10 @@
+# [1.0.0-beta.2](https://github.com/Ked57/frey/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2025-09-18)
+
+
+### Bug Fixes
+
+* simplify manual release workflow to use semantic-release ([29ed9b0](https://github.com/Ked57/frey/commit/29ed9b06d74611f98c24af048baee6a58fba2827))
+
 # 1.0.0-beta.1 (2025-09-18)
 
 
