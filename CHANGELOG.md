@@ -1,6 +1,19 @@
 # [1.1.0](https://github.com/Ked57/frey/compare/v1.0.0...v1.1.0) (2025-09-18)
 
 
+### Bug Fixes
+
+* revert to correct prerelease: true for beta releases ([5483608](https://github.com/Ked57/frey/commit/54836085292b15c8d16bc81cab284986adaf372a))
+* set explicit beta prerelease identifier in semantic-release config ([de114f2](https://github.com/Ked57/frey/commit/de114f2a7d18167927561a24742275589948406d))
+
+
+### Features
+
+* migrate to turborepo and add a docs application ([#4](https://github.com/Ked57/frey/issues/4)) ([14b4c46](https://github.com/Ked57/frey/commit/14b4c468f75e3287c93538309310a2952864fcfc))
+
+# [1.1.0](https://github.com/Ked57/frey/compare/v1.0.0...v1.1.0) (2025-09-18)
+
+
 ### Features
 
 * migrate to turborepo and add a docs application ([#4](https://github.com/Ked57/frey/issues/4)) ([14b4c46](https://github.com/Ked57/frey/commit/14b4c468f75e3287c93538309310a2952864fcfc))
