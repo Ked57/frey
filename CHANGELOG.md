@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/Ked57/frey/compare/v1.1.0...v1.1.1) (2025-09-18)
+
+
+### Bug Fixes
+
+* releaserc ([4456ce8](https://github.com/Ked57/frey/commit/4456ce81239330735bf459fc40d8afe15269e277))
+
 # [1.1.0](https://github.com/Ked57/frey/compare/v1.0.0...v1.1.0) (2025-09-18)
 
 
