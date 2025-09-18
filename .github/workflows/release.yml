@@ -106,7 +106,7 @@ jobs:
         git push origin $STABLE_TAG
         
         # Use semantic-release to publish (this will handle npm publishing properly)
-        npx semantic-release --extends packages/frey/.releaserc.json
+        npx semantic-release
         
         echo "Successfully promoted $BETA_TAG to $STABLE_TAG"
       env:

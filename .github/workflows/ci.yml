@@ -117,8 +117,8 @@ jobs:
         echo "Running semantic release on master branch (creating beta)..."
         echo "Available branches:"
         git branch -r
-        echo "Running semantic-release from root with frey package config..."
-        npx semantic-release --extends packages/frey/.releaserc.json
+        echo "Running semantic-release from root..."
+        npx semantic-release
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
