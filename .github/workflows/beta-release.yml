@@ -16,6 +16,7 @@ jobs:
     - name: Checkout beta branch
       uses: actions/checkout@v4
       with:
+        ref: beta
         fetch-depth: 0
         token: ${{ secrets.GH_TOKEN }}
         
@@ -23,6 +24,14 @@ jobs:
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        
+    - name: Ensure we're on latest beta branch
+      run: |
+        git fetch origin beta
+        git checkout beta
+        git pull origin beta
+        echo "Current branch: $(git branch --show-current)"
+        echo "Latest commit: $(git rev-parse HEAD)"
         
     - name: Fetch all tags and check existing releases
       run: |
