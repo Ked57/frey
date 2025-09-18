@@ -1,33 +1,25 @@
 {
-  "name": "frey",
+  "name": "frey-monorepo",
   "version": "1.0.0",
-  "description": "",
-  "main": "./dist/src/index.js",
-  "exports": {
-    ".": "./dist/src/index.js",
-    "./package.json": "./package.json"
-  },
-  "type": "module",
-  "files": [
-    "dist/src/**/*",
-    "dist/package.json",
-    "README.md",
-    "LICENSE"
+  "description": "Frey framework monorepo",
+  "private": true,
+  "packageManager": "npm@10.2.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
-    "dev:nowatch": "node --loader ts-node/esm ./example.ts",
-    "dev": "nodemon",
-    "build": "tsc --noEmit",
-    "build:dist": "tsc --outDir dist --declaration --declarationMap",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "format": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"*.ts\" \"*.json\"",
-    "format:fix": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"*.ts\" \"*.json\"",
-    "type-check": "tsc --noEmit --strict",
-    "audit": "npm audit --audit-level=moderate",
-    "prepare": "npm run build",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:run": "turbo run test:run",
+    "test:coverage": "turbo run test:coverage",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "format:fix": "turbo run format:fix",
+    "type-check": "turbo run type-check",
+    "audit": "turbo run audit",
+    "dev": "turbo run dev",
+    "clean": "turbo run clean",
     "semantic-release": "semantic-release"
   },
   "keywords": [],
@@ -53,6 +45,7 @@
     "semantic-release": "^24.2.8",
     "supertest": "7.1.4",
     "ts-node": "10.9.2",
+    "turbo": "^2.5.6",
     "typescript": "5.9.2",
     "vitest": "3.2.4"
   },

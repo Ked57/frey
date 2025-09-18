@@ -1,5 +1,5 @@
 import { z } from "zod";
-import Fastify from "fastify";
+import Fastify, { FastifyRequest, FastifyReply } from "fastify";
 import { defineEntity } from "./src/entity.js";
 import { startServer } from "./src/main.js";
 
@@ -18,7 +18,11 @@ const userEntity = defineEntity({
     {
       path: "/mycustomroute",
       method: "GET",
-      registerRoute: async (request, reply, { server, entity }) => {
+      registerRoute: async (
+        request: FastifyRequest,
+        reply: FastifyReply,
+        { server, entity }: any,
+      ) => {
         // entity.schema is now properly typed as userSchema
         reply.send({
           message: "Hello from custom route!",
@@ -30,7 +34,11 @@ const userEntity = defineEntity({
     {
       path: "/stats",
       method: "GET",
-      registerRoute: async (request, reply, { server, entity }) => {
+      registerRoute: async (
+        request: FastifyRequest,
+        reply: FastifyReply,
+        { server, entity }: any,
+      ) => {
         reply.send({
           totalUsers: 42,
           activeUsers: 38,
@@ -39,7 +47,7 @@ const userEntity = defineEntity({
       },
     },
   ],
-  findAll: async (params, { request, server }) => {
+  findAll: async (params: any, { request, server }: any) => {
     return [
       {
         uuid: crypto.randomUUID(),
@@ -49,7 +57,7 @@ const userEntity = defineEntity({
       },
     ];
   },
-  findOne: async (param, { request, server }) => {
+  findOne: async (param: any, { request, server }: any) => {
     return {
       uuid: crypto.randomUUID(),
       name: "John Doe",
