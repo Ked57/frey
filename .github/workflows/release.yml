@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       beta_tag:
-        description: 'Beta tag to promote to stable (e.g., v1.1.0-beta.1) or "latest" for most recent'
+        description: 'Master prerelease tag to promote to stable (e.g., v1.1.0-master.1) or "latest" for most recent'
         required: true
         type: string
         default: 'latest'
@@ -53,28 +53,28 @@ jobs:
     - name: Determine beta tag to promote
       run: |
         if [ "${{ github.event.inputs.beta_tag }}" = "latest" ]; then
-          # Get the latest beta tag
-          BETA_TAG=$(git tag -l | grep beta | tail -1)
+          # Get the latest master prerelease tag
+          BETA_TAG=$(git tag -l | grep master | tail -1)
           if [ -z "$BETA_TAG" ]; then
-            echo "No beta tags found!"
+            echo "No master prerelease tags found!"
             exit 1
           fi
-          echo "Using latest beta tag: $BETA_TAG"
+          echo "Using latest master prerelease tag: $BETA_TAG"
         else
           BETA_TAG="${{ github.event.inputs.beta_tag }}"
-          echo "Using specified beta tag: $BETA_TAG"
+          echo "Using specified tag: $BETA_TAG"
         fi
         
         # Validate the tag exists
         if ! git tag -l | grep -q "^$BETA_TAG$"; then
           echo "Tag $BETA_TAG does not exist!"
-          echo "Available beta tags:"
-          git tag -l | grep beta
+          echo "Available master prerelease tags:"
+          git tag -l | grep master
           exit 1
         fi
         
-        # Extract stable version from beta tag (remove -beta.X)
-        STABLE_VERSION=$(echo $BETA_TAG | sed 's/^v//' | sed 's/-beta\.[0-9]*$//')
+        # Extract stable version from beta tag (remove -master.X)
+        STABLE_VERSION=$(echo $BETA_TAG | sed 's/^v//' | sed 's/-master\.[0-9]*$//')
         STABLE_TAG="v$STABLE_VERSION"
         
         echo "BETA_TAG=$BETA_TAG" >> $GITHUB_ENV
