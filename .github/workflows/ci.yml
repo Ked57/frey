@@ -78,7 +78,7 @@ jobs:
         if git merge-base --is-ancestor master beta; then
           echo "Beta is already up to date with master"
           # Create an empty commit to trigger beta-release workflow
-          git commit --allow-empty -m "chore: trigger beta release [skip ci]"
+          git commit --allow-empty -m "chore: trigger beta release"
         else
           echo "Rebasing beta onto master..."
           # Rebase beta onto master (cleaner history)
@@ -86,7 +86,7 @@ jobs:
         fi
         
         # Push beta branch (force push needed for rebase)
-        # Use --force-with-lease to ensure we don't overwrite unexpected changes
-        git push origin beta --force-with-lease
+        # Beta branch is only managed by CI, so safe to force push
+        git push origin beta --force
         
         echo "Successfully synced master to beta branch with rebase"
