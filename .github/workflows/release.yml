@@ -83,14 +83,12 @@ jobs:
         
         echo "Will promote $BETA_TAG to $STABLE_TAG"
         
-    - name: Checkout beta tag
-      run: |
-        echo "Checking out beta tag: $BETA_TAG"
-        git checkout $BETA_TAG
-        
     - name: Promote beta to stable
       run: |
         echo "Promoting $BETA_TAG to stable release $STABLE_TAG"
+        
+        # Checkout the beta tag
+        git checkout $BETA_TAG
         
         # Change to the frey package directory
         cd packages/frey
@@ -103,11 +101,10 @@ jobs:
         git add packages/frey/package.json
         git commit -m "chore(release): $STABLE_TAG [skip ci]"
         
-        # Create and push the stable tag
+        # Create the stable tag
         git tag $STABLE_TAG
-        git push origin $STABLE_TAG
         
-        # Use semantic-release to publish (this will handle npm publishing properly)
+        # Use semantic-release to publish (this will handle npm publishing and tag pushing)
         npx semantic-release
         
         echo "Successfully promoted $BETA_TAG to $STABLE_TAG"
