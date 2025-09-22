@@ -90,6 +90,9 @@ jobs:
         # Checkout the beta tag
         git checkout $BETA_TAG
         
+        # Create a new branch from this tag
+        git checkout -b release-$STABLE_TAG
+        
         # Change to the frey package directory
         cd packages/frey
         
