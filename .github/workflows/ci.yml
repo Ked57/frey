@@ -2,11 +2,6 @@ name: CI
 
 on:
   push:
-    branches: [master]
-    paths:
-      - 'packages/frey/**'
-      - '.github/workflows/ci.yml'
-      - '.releaserc.json'
   pull_request:
 
 jobs:
@@ -48,7 +43,7 @@ jobs:
   release:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && (contains(github.event.head_commit.modified, 'packages/frey/') || contains(github.event.head_commit.added, 'packages/frey/') || contains(github.event.head_commit.removed, 'packages/frey/'))
     permissions:
       contents: write
       issues: write

@@ -1,35 +1,38 @@
-'use client';
+"use client";
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import CodeMirror from '@uiw/react-codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { json } from '@codemirror/lang-json';
-import { markdown } from '@codemirror/lang-markdown';
-import { tokyoNightStorm } from '@uiw/codemirror-theme-tokyo-night-storm';
-import { EditorView } from '@codemirror/view';
-import { useState } from 'react';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import CodeMirror from "@uiw/react-codemirror";
+import { javascript } from "@codemirror/lang-javascript";
+import { json } from "@codemirror/lang-json";
+import { markdown } from "@codemirror/lang-markdown";
+import { tokyoNightStorm } from "@uiw/codemirror-theme-tokyo-night-storm";
+import { EditorView } from "@codemirror/view";
+import { useState } from "react";
 
 // Custom theme extension to add padding and fix async keyword color
-const tokyoNightStormWithPadding = EditorView.theme({
-  '.cm-content': {
-    padding: '1rem',
+const tokyoNightStormWithPadding = EditorView.theme(
+  {
+    ".cm-content": {
+      padding: "1rem",
+    },
+    // Force all keywords to be purple, including async
+    ".cm-keyword": {
+      color: "#bb9af7 !important",
+    },
+    ".cm-token.cm-keyword": {
+      color: "#bb9af7 !important",
+    },
+    // Target specific token types that might be used for async
+    '.cm-token[data-token="async"]': {
+      color: "#bb9af7 !important",
+    },
+    '.cm-token[data-token="await"]': {
+      color: "#bb9af7 !important",
+    },
   },
-  // Force all keywords to be purple, including async
-  '.cm-keyword': { 
-    color: '#bb9af7 !important',
-  },
-  '.cm-token.cm-keyword': { 
-    color: '#bb9af7 !important',
-  },
-  // Target specific token types that might be used for async
-  '.cm-token[data-token="async"]': { 
-    color: '#bb9af7 !important',
-  },
-  '.cm-token[data-token="await"]': { 
-    color: '#bb9af7 !important',
-  },
-}, { dark: true });
+  { dark: true },
+);
 
 // Copy button component
 function CopyButton({ text }: { text: string }) {
@@ -41,7 +44,7 @@ function CopyButton({ text }: { text: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy text: ', err);
+      console.error("Failed to copy text: ", err);
     }
   };
 
@@ -49,9 +52,9 @@ function CopyButton({ text }: { text: string }) {
     <button
       onClick={handleCopy}
       className="absolute top-3 right-3 px-3 py-1.5 text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-md transition-colors z-10 border border-gray-600"
-      title={copied ? 'Copied!' : 'Copy to clipboard'}
+      title={copied ? "Copied!" : "Copy to clipboard"}
     >
-      {copied ? '✓ Copied' : 'Copy'}
+      {copied ? "✓ Copied" : "Copy"}
     </button>
   );
 }
@@ -67,41 +70,44 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
         remarkPlugins={[remarkGfm]}
         components={{
           code({ className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : '';
+            const match = /language-(\w+)/.exec(className || "");
+            const language = match ? match[1] : "";
 
             if (language) {
               // Map language names to CodeMirror extensions
               const getLanguageExtension = (lang: string) => {
                 switch (lang) {
-                  case 'javascript':
-                  case 'js':
+                  case "javascript":
+                  case "js":
                     return javascript();
-                  case 'typescript':
-                  case 'ts':
+                  case "typescript":
+                  case "ts":
                     return javascript();
-                  case 'json':
+                  case "json":
                     return json();
-                  case 'markdown':
-                  case 'md':
+                  case "markdown":
+                  case "md":
                     return markdown();
-                  case 'bash':
-                  case 'shell':
-                  case 'sh':
+                  case "bash":
+                  case "shell":
+                  case "sh":
                     return javascript(); // Use JavaScript highlighting for shell commands
                   default:
                     return javascript(); // fallback
                 }
               };
 
-              const codeText = String(children).replace(/\n$/, '');
-              
+              const codeText = String(children).replace(/\n$/, "");
+
               return (
                 <div className="relative my-4 rounded-lg border border-gray-700 dark:border-gray-600 overflow-hidden group">
                   <CopyButton text={codeText} />
                   <CodeMirror
                     value={codeText}
-                    extensions={[getLanguageExtension(language), tokyoNightStormWithPadding]}
+                    extensions={[
+                      getLanguageExtension(language),
+                      tokyoNightStormWithPadding,
+                    ]}
                     theme={tokyoNightStorm}
                     editable={false}
                     basicSetup={{
@@ -116,8 +122,8 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
                       highlightSelectionMatches: false,
                     }}
                     style={{
-                      fontSize: '0.875rem',
-                      lineHeight: '1.5',
+                      fontSize: "0.875rem",
+                      lineHeight: "1.5",
                     }}
                   />
                 </div>

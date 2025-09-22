@@ -74,7 +74,6 @@ body {
   @apply bg-transparent p-0 text-gray-100 font-mono text-sm;
 }
 
-
 .prose blockquote {
   @apply border-l-4 border-blue-500 pl-4 italic text-gray-600 dark:text-gray-400 mb-4;
 }

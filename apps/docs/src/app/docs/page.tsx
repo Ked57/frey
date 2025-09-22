@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { getAllDocs } from '@/lib/markdown';
+import Link from "next/link";
+import { getAllDocs } from "@/lib/markdown";
 
 export default async function DocsPage() {
   const docs = await getAllDocs();
@@ -39,13 +39,13 @@ export default async function DocsPage() {
           Quick Start
         </h3>
         <p className="mt-2 text-blue-800 dark:text-blue-200">
-          New to Frey? Start with our{' '}
+          New to Frey? Start with our{" "}
           <Link
             href="/docs/getting-started"
             className="font-medium underline hover:no-underline"
           >
             Getting Started guide
-          </Link>{' '}
+          </Link>{" "}
           to build your first API in minutes.
         </p>
       </div>

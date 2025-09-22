@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { navigation } from '@/lib/navigation';
+import Link from "next/link";
+import { navigation } from "@/lib/navigation";
 
 export default function DocsLayout({
   children,
@@ -14,7 +14,10 @@ export default function DocsLayout({
           <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
             <div className="flex flex-col flex-grow pt-5 bg-white dark:bg-gray-800 overflow-y-auto border-r border-gray-200 dark:border-gray-700">
               <div className="flex items-center flex-shrink-0 px-4">
-                <Link href="/" className="text-xl font-bold text-gray-900 dark:text-white">
+                <Link
+                  href="/"
+                  className="text-xl font-bold text-gray-900 dark:text-white"
+                >
                   Frey
                 </Link>
               </div>

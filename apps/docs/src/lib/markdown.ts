@@ -1,8 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
+import fs from "fs";
+import path from "path";
+import matter from "gray-matter";
 
-const docsDirectory = path.join(process.cwd(), '../../docs/frey');
+const docsDirectory = path.join(process.cwd(), "../../docs/frey");
 
 export interface DocMetadata {
   title: string;
@@ -19,13 +19,13 @@ export interface DocData {
 export function getAllDocIds(): string[] {
   const fileNames = fs.readdirSync(docsDirectory);
   return fileNames
-    .filter((fileName) => fileName.endsWith('.md'))
-    .map((fileName) => fileName.replace(/\.md$/, ''));
+    .filter((fileName) => fileName.endsWith(".md"))
+    .map((fileName) => fileName.replace(/\.md$/, ""));
 }
 
 export async function getDocData(id: string): Promise<DocData> {
   const fullPath = path.join(docsDirectory, `${id}.md`);
-  const fileContents = fs.readFileSync(fullPath, 'utf8');
+  const fileContents = fs.readFileSync(fullPath, "utf8");
 
   // Use gray-matter to parse the post metadata section
   const matterResult = matter(fileContents);
@@ -41,16 +41,16 @@ export async function getDocData(id: string): Promise<DocData> {
 export async function getAllDocs(): Promise<DocData[]> {
   const fileNames = fs.readdirSync(docsDirectory);
   const allDocsData = fileNames
-    .filter((fileName) => fileName.endsWith('.md'))
+    .filter((fileName) => fileName.endsWith(".md"))
     .map((fileName) => {
-      const id = fileName.replace(/\.md$/, '');
+      const id = fileName.replace(/\.md$/, "");
       const fullPath = path.join(docsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, 'utf8');
+      const fileContents = fs.readFileSync(fullPath, "utf8");
       const matterResult = matter(fileContents);
 
       return {
         id,
-        content: '', // We'll load content when needed
+        content: "", // We'll load content when needed
         metadata: {
           title: matterResult.data.title || id,
           description: matterResult.data.description,
