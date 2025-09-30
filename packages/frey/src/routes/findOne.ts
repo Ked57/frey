@@ -2,6 +2,8 @@ import { type FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import { parseParams } from "../helpers/parse-params.js";
+import { zodToOpenAPI, generatePathSchema } from "../helpers/zod-to-openapi.js";
+import { getReadErrorResponses } from "../helpers/error-schemas.js";
 
 export const registerFindOneRoute = (
   server: FastifyInstance,
@@ -14,6 +16,21 @@ export const registerFindOneRoute = (
 
   server.get(
     `/${entity.name}/:${entity.customId ?? "id"}`,
+    {
+      schema: {
+        summary: `Get a ${entity.name} by ID`,
+        description: `Retrieve a specific ${entity.name} by its ID`,
+        tags: [entity.name],
+        params: generatePathSchema(entity),
+        response: {
+          200: {
+            ...zodToOpenAPI(entity.schema),
+            description: `The ${entity.name}`,
+          },
+          ...getReadErrorResponses(),
+        },
+      },
+    },
     async (request, reply) => {
       try {
         const params = parseParams({

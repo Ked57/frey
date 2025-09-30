@@ -74,8 +74,8 @@ const fastify = Fastify({
   logger: true,
 });
 
-// Type information is now preserved - entities array maintains its specific types
 startServer(fastify, {
   entities: [userEntity],
+  port: 3000,
   // middlewares: [],
 });

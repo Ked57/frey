@@ -1,6 +1,7 @@
 import { type FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
+import { getCustomRouteErrorResponses } from "../helpers/error-schemas.js";
 
 export const registerCustomRoutes = (
   server: FastifyInstance,
@@ -27,7 +28,20 @@ export const registerCustomRoutes = (
       | "head"
       | "options";
 
-    (server[method] as any)(fullPath, async (request: any, reply: any) => {
+    (server[method] as any)(fullPath, {
+      schema: {
+        summary: `Custom ${customRoute.method} route for ${entity.name}`,
+        description: `Custom route: ${customRoute.method} ${fullPath}`,
+        tags: [entity.name, "custom"],
+        response: {
+          200: {
+            type: "object",
+            description: "Custom route response",
+          },
+          ...getCustomRouteErrorResponses(),
+        },
+      },
+    }, async (request: any, reply: any) => {
       try {
         await customRoute.registerRoute(request, reply, {
           server,

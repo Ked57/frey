@@ -2,12 +2,29 @@ import { type FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import { parseParams } from "../helpers/parse-params.js";
+import { zodToOpenAPI, generateQuerySchema } from "../helpers/zod-to-openapi.js";
+import { getReadErrorResponses } from "../helpers/error-schemas.js";
 
 export const registerFindAllRoute = (
   server: FastifyInstance,
   entity: Entity<any>,
 ) => {
-  server.get(`/${entity.name}`, async (request, reply) => {
+  server.get(`/${entity.name}`, {
+    schema: {
+      summary: `Get all ${entity.name}s`,
+      description: `Retrieve a list of ${entity.name}s with optional filtering, sorting, and pagination`,
+      tags: [entity.name],
+      querystring: generateQuerySchema(entity),
+      response: {
+        200: {
+          type: "array",
+          items: zodToOpenAPI(entity.schema),
+          description: `List of ${entity.name}s`,
+        },
+        ...getReadErrorResponses(),
+      },
+    },
+  }, async (request, reply) => {
     try {
       const params = parseParams({
         params: request.query,

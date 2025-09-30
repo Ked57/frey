@@ -2,6 +2,8 @@ import { type FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import { parseParams } from "../helpers/parse-params.js";
+import { zodToOpenAPI, generatePathSchema } from "../helpers/zod-to-openapi.js";
+import { getWriteErrorResponses } from "../helpers/error-schemas.js";
 
 export const registerUpdateRoute = (
   server: FastifyInstance,
@@ -16,6 +18,22 @@ export const registerUpdateRoute = (
 
   server.put(
     `/${entity.name}/:${entity.customId ?? "id"}`,
+    {
+      schema: {
+        summary: `Update a ${entity.name}`,
+        description: `Update an existing ${entity.name} with the provided data`,
+        tags: [entity.name],
+        params: generatePathSchema(entity),
+        body: zodToOpenAPI(entity.schema),
+        response: {
+          200: {
+            ...zodToOpenAPI(entity.schema),
+            description: `The updated ${entity.name}`,
+          },
+          ...getWriteErrorResponses(),
+        },
+      },
+    },
     async (request, reply) => {
       try {
         const urlParams = parseParams({

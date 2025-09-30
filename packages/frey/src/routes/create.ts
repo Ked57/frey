@@ -2,6 +2,8 @@ import { type FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import { parseParams } from "../helpers/parse-params.js";
+import { zodToOpenAPI } from "../helpers/zod-to-openapi.js";
+import { getWriteErrorResponses } from "../helpers/error-schemas.js";
 
 export const registerCreateRoute = (
   server: FastifyInstance,
@@ -14,7 +16,21 @@ export const registerCreateRoute = (
     return;
   }
 
-  server.post(`/${entity.name}`, async (request, reply) => {
+  server.post(`/${entity.name}`, {
+    schema: {
+      summary: `Create a new ${entity.name}`,
+      description: `Create a new ${entity.name} with the provided data`,
+      tags: [entity.name],
+      body: zodToOpenAPI(entity.schema),
+      response: {
+        200: {
+          ...zodToOpenAPI(entity.schema),
+          description: `The created ${entity.name}`,
+        },
+        ...getWriteErrorResponses(),
+      },
+    },
+  }, async (request, reply) => {
     try {
       const params = parseParams({
         params: request.body,

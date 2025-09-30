@@ -2,6 +2,8 @@ import { type FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import { parseParams } from "../helpers/parse-params.js";
+import { generatePathSchema } from "../helpers/zod-to-openapi.js";
+import { getDeleteErrorResponses } from "../helpers/error-schemas.js";
 
 export const registerDeleteRoute = (
   server: FastifyInstance,
@@ -16,6 +18,24 @@ export const registerDeleteRoute = (
 
   server.delete(
     `/${entity.name}/:${entity.customId ?? "id"}`,
+    {
+      schema: {
+        summary: `Delete a ${entity.name}`,
+        description: `Delete an existing ${entity.name} by its ID`,
+        tags: [entity.name],
+        params: generatePathSchema(entity),
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              success: { type: "boolean" },
+            },
+            description: "Deletion confirmation",
+          },
+          ...getDeleteErrorResponses(),
+        },
+      },
+    },
     async (request, reply) => {
       try {
         const params = parseParams({

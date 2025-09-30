@@ -61,6 +61,8 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "zod": "4.1.8"
+    "zod": "4.1.8",
+    "@fastify/swagger": "^9.1.0",
+    "@fastify/swagger-ui": "^5.0.1"
   }
 }
