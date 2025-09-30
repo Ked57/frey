@@ -1,0 +1,234 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { z } from "zod";
+import Fastify from "fastify";
+import { startServer, type ServerOptions, type SwaggerConfig } from "../../src/main.js";
+import { defineEntity } from "../../src/entity.js";
+
+// Mock the swagger imports
+vi.mock("@fastify/swagger", () => ({
+  default: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@fastify/swagger-ui", () => ({
+  default: vi.fn().mockResolvedValue(undefined),
+}));
+
+describe("Swagger Configuration", () => {
+  let fastify: any;
+
+  const userSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+  });
+
+  const userEntity = defineEntity({
+    name: "user",
+    schema: userSchema,
+    findAll: async () => [],
+    findOne: async () => ({ id: "1", name: "Test", email: "test@example.com" }),
+  });
+
+  beforeEach(() => {
+    fastify = Fastify({ logger: false });
+    vi.clearAllMocks();
+  });
+
+  afterEach(async () => {
+    if (fastify) {
+      await fastify.close();
+    }
+  });
+
+  describe("Swagger enabled by default", () => {
+    it("should register swagger and swagger-ui when no swagger config provided", async () => {
+      const swaggerMock = await import("@fastify/swagger");
+      const swaggerUiMock = await import("@fastify/swagger-ui");
+
+      const options: ServerOptions = {
+        entities: [userEntity],
+        port: 3001,
+      };
+
+      await startServer(fastify, options);
+
+      expect(swaggerMock.default).toHaveBeenCalled();
+      // Swagger UI is only registered when enabled is explicitly true
+      expect(swaggerUiMock.default).not.toHaveBeenCalled();
+    });
+
+    it("should register swagger and swagger-ui when swagger.enabled is true", async () => {
+      const swaggerMock = await import("@fastify/swagger");
+      const swaggerUiMock = await import("@fastify/swagger-ui");
+
+      const options: ServerOptions = {
+        entities: [userEntity],
+        port: 3002,
+        swagger: {
+          enabled: true,
+        },
+      };
+
+      await startServer(fastify, options);
+
+      expect(swaggerMock.default).toHaveBeenCalled();
+      expect(swaggerUiMock.default).toHaveBeenCalled();
+    });
+  });
+
+  describe("Swagger disabled", () => {
+    it("should not register swagger or swagger-ui when swagger.enabled is false", async () => {
+      const swaggerMock = await import("@fastify/swagger");
+      const swaggerUiMock = await import("@fastify/swagger-ui");
+
+      const options: ServerOptions = {
+        entities: [userEntity],
+        port: 3003,
+        swagger: {
+          enabled: false,
+        },
+      };
+
+      await startServer(fastify, options);
+
+      expect(swaggerMock.default).not.toHaveBeenCalled();
+      expect(swaggerUiMock.default).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Swagger configuration options", () => {
+    it("should use custom swagger configuration", async () => {
+      const swaggerMock = await import("@fastify/swagger");
+      const swaggerUiMock = await import("@fastify/swagger-ui");
+
+      const swaggerConfig: SwaggerConfig = {
+        enabled: true,
+        title: "Custom API",
+        description: "Custom API description",
+        version: "2.0.0",
+        routePrefix: "/api-docs",
+        uiConfig: {
+          docExpansion: "list",
+          deepLinking: true,
+        },
+      };
+
+      const options: ServerOptions = {
+        entities: [userEntity],
+        port: 3004,
+        swagger: swaggerConfig,
+      };
+
+      await startServer(fastify, options);
+
+      expect(swaggerMock.default).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          openapi: expect.objectContaining({
+            info: expect.objectContaining({
+              title: "Custom API",
+              description: "Custom API description",
+              version: "2.0.0",
+            }),
+          }),
+        }),
+        expect.any(Function)
+      );
+
+      expect(swaggerUiMock.default).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          routePrefix: "/api-docs",
+          uiConfig: expect.objectContaining({
+            docExpansion: "list",
+            deepLinking: true,
+          }),
+        }),
+        expect.any(Function)
+      );
+    });
+
+    it("should use default values when swagger config is partial", async () => {
+      const swaggerMock = await import("@fastify/swagger");
+      const swaggerUiMock = await import("@fastify/swagger-ui");
+
+      const options: ServerOptions = {
+        entities: [userEntity],
+        port: 3005,
+        swagger: {
+          enabled: true,
+          title: "Partial Config API",
+        },
+      };
+
+      await startServer(fastify, options);
+
+      expect(swaggerMock.default).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          openapi: expect.objectContaining({
+            info: expect.objectContaining({
+              title: "Partial Config API",
+              description: "Entity-driven API generated by Frey framework",
+              version: "1.0.0",
+            }),
+          }),
+        }),
+        expect.any(Function)
+      );
+
+      expect(swaggerUiMock.default).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          routePrefix: "/documentation",
+          uiConfig: expect.objectContaining({
+            docExpansion: "full",
+            deepLinking: false,
+          }),
+        }),
+        expect.any(Function)
+      );
+    });
+  });
+
+  describe("Entity tags generation", () => {
+    it("should generate tags for all entities", async () => {
+      const swaggerMock = await import("@fastify/swagger");
+
+      const productSchema = z.object({
+        id: z.string(),
+        name: z.string(),
+        price: z.number(),
+      });
+
+      const productEntity = defineEntity({
+        name: "product",
+        schema: productSchema,
+        findAll: async () => [],
+      });
+
+      const options: ServerOptions = {
+        entities: [userEntity, productEntity],
+        port: 3006,
+        swagger: {
+          enabled: true,
+        },
+      };
+
+      await startServer(fastify, options);
+
+      expect(swaggerMock.default).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          openapi: expect.objectContaining({
+            tags: [
+              { name: "user", description: "user operations" },
+              { name: "product", description: "product operations" },
+            ],
+          }),
+        }),
+        expect.any(Function)
+      );
+    });
+  });
+});

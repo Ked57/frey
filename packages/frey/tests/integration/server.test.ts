@@ -65,7 +65,12 @@ describe("Server Integration Tests", () => {
       await startServer(fastify, serverOptions);
 
       // Verify that the route was registered
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
 
     it("should register routes for entity with findOne", async () => {
@@ -106,8 +111,18 @@ describe("Server Integration Tests", () => {
       await startServer(fastify, serverOptions);
 
       // Verify that both routes were registered
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
-      expect(mockGet).toHaveBeenCalledWith("/user/:id", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user/:id", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get a user by ID",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
 
     it("should register routes with custom ID field", async () => {
@@ -147,8 +162,18 @@ describe("Server Integration Tests", () => {
       await startServer(fastify, serverOptions);
 
       // Verify that routes were registered with custom ID
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
-      expect(mockGet).toHaveBeenCalledWith("/user/:uuid", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user/:uuid", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get a user by ID",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
 
     it("should register routes for multiple entities", async () => {
@@ -185,6 +210,7 @@ describe("Server Integration Tests", () => {
       const serverOptions: ServerOptions = {
         entities: [userEntity, productEntity],
         port: 3005,
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -195,15 +221,32 @@ describe("Server Integration Tests", () => {
       await startServer(fastify, serverOptions);
 
       // Check that routes were registered for both entities
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
-      expect(mockGet).toHaveBeenCalledWith("/product", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/product", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all products",
+          tags: ["product"],
+        }),
+      }), expect.any(Function));
       expect(mockGet).toHaveBeenCalledWith(
         "/product/:id",
+        expect.objectContaining({
+          schema: expect.objectContaining({
+            summary: "Get a product by ID",
+            tags: ["product"],
+          }),
+        }),
         expect.any(Function),
       );
       // User entity doesn't have findOne, so no /user/:id route
       expect(mockGet).not.toHaveBeenCalledWith(
         "/user/:id",
+        expect.any(Object),
         expect.any(Function),
       );
     });
@@ -242,7 +285,12 @@ describe("Server Integration Tests", () => {
       await startServer(fastify, serverOptions);
 
       // Verify that the route was registered
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
   });
 
@@ -267,6 +315,7 @@ describe("Server Integration Tests", () => {
       const serverOptions: ServerOptions = {
         entities: [userEntity],
         port: 3007,
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -277,7 +326,12 @@ describe("Server Integration Tests", () => {
       await startServer(fastify, serverOptions);
 
       // Verify that the route was still registered despite the error-prone function
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
   });
 });

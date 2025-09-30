@@ -37,6 +37,7 @@ export const registerCustomRoutes = (
           200: {
             type: "object",
             description: "Custom route response",
+            additionalProperties: true,
           },
           ...getCustomRouteErrorResponses(),
         },

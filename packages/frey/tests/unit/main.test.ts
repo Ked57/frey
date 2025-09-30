@@ -76,6 +76,7 @@ describe("Server Setup", () => {
     it("should use default port when not specified", async () => {
       const serverOptions: ServerOptions = {
         entities: [mockEntity],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -149,6 +150,7 @@ describe("Server Setup", () => {
     it("should handle server start error", async () => {
       const serverOptions: ServerOptions = {
         entities: [mockEntity],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -169,6 +171,7 @@ describe("Server Setup", () => {
     it("should register GET route for findAll", async () => {
       const serverOptions: ServerOptions = {
         entities: [mockEntity],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -178,12 +181,18 @@ describe("Server Setup", () => {
 
       await startServer(fastify, serverOptions);
 
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
 
     it("should register GET route for findOne when findOne function exists", async () => {
       const serverOptions: ServerOptions = {
         entities: [mockEntity],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -193,7 +202,12 @@ describe("Server Setup", () => {
 
       await startServer(fastify, serverOptions);
 
-      expect(mockGet).toHaveBeenCalledWith("/user/:id", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user/:id", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get a user by ID",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
 
     it("should not register findOne route when findOne function is missing", async () => {
@@ -214,6 +228,7 @@ describe("Server Setup", () => {
 
       const serverOptions: ServerOptions = {
         entities: [entityWithoutFindOne],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -225,9 +240,15 @@ describe("Server Setup", () => {
       await startServer(fastify, serverOptions);
 
       // Should only register findAll route
-      expect(mockGet).toHaveBeenCalledWith("/product", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/product", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all products",
+          tags: ["product"],
+        }),
+      }), expect.any(Function));
       expect(mockGet).not.toHaveBeenCalledWith(
         "/product/:id",
+        expect.any(Object),
         expect.any(Function),
       );
       expect(mockLogError).toHaveBeenCalledWith(
@@ -257,6 +278,7 @@ describe("Server Setup", () => {
 
       const serverOptions: ServerOptions = {
         entities: [entityWithCustomId],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -266,7 +288,12 @@ describe("Server Setup", () => {
 
       await startServer(fastify, serverOptions);
 
-      expect(mockGet).toHaveBeenCalledWith("/user/:uuid", expect.any(Function));
+      expect(mockGet).toHaveBeenCalledWith("/user/:uuid", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get a user by ID",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
   });
 
@@ -275,6 +302,7 @@ describe("Server Setup", () => {
       const mockGet = vi.spyOn(fastify, "get");
       const serverOptions: ServerOptions = {
         entities: [mockEntity],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -282,14 +310,20 @@ describe("Server Setup", () => {
         .mockResolvedValue(undefined);
       await startServer(fastify, serverOptions);
 
-      // Check that the route was registered
-      expect(mockGet).toHaveBeenCalledWith("/user", expect.any(Function));
+      // Check that the route was registered with schema
+      expect(mockGet).toHaveBeenCalledWith("/user", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get all users",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
 
     it("should register findOne route handler", async () => {
       const mockGet = vi.spyOn(fastify, "get");
       const serverOptions: ServerOptions = {
         entities: [mockEntity],
+        swagger: { enabled: false },
       };
 
       const mockListen = vi
@@ -297,8 +331,13 @@ describe("Server Setup", () => {
         .mockResolvedValue(undefined);
       await startServer(fastify, serverOptions);
 
-      // Check that the route was registered
-      expect(mockGet).toHaveBeenCalledWith("/user/:id", expect.any(Function));
+      // Check that the route was registered with schema
+      expect(mockGet).toHaveBeenCalledWith("/user/:id", expect.objectContaining({
+        schema: expect.objectContaining({
+          summary: "Get a user by ID",
+          tags: ["user"],
+        }),
+      }), expect.any(Function));
     });
   });
 });

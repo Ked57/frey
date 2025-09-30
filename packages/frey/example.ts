@@ -77,5 +77,16 @@ const fastify = Fastify({
 startServer(fastify, {
   entities: [userEntity],
   port: 3000,
+  swagger: {
+    enabled: true,
+    title: "User Management API",
+    description: "API for managing users with Frey framework",
+    version: "1.0.0",
+    routePrefix: "/docs",
+    uiConfig: {
+      docExpansion: "list",
+      deepLinking: true,
+    },
+  },
   // middlewares: [],
 });
