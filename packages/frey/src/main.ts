@@ -67,7 +67,7 @@ export const startServer = async <
   }
 
   // Register Swagger documentation if enabled
-  if (opts.swagger?.enabled !== false) {
+  if (opts.swagger?.enabled === true) {
     const swagger = await import("@fastify/swagger");
     await fastify.register(swagger.default, {
       openapi: {

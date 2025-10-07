@@ -40,8 +40,8 @@ describe("Swagger Configuration", () => {
     }
   });
 
-  describe("Swagger enabled by default", () => {
-    it("should register swagger and swagger-ui when no swagger config provided", async () => {
+  describe("Swagger disabled by default", () => {
+    it("should not register swagger or swagger-ui when no swagger config provided", async () => {
       const swaggerMock = await import("@fastify/swagger");
       const swaggerUiMock = await import("@fastify/swagger-ui");
 
@@ -52,8 +52,7 @@ describe("Swagger Configuration", () => {
 
       await startServer(fastify, options);
 
-      expect(swaggerMock.default).toHaveBeenCalled();
-      // Swagger UI is only registered when enabled is explicitly true
+      expect(swaggerMock.default).not.toHaveBeenCalled();
       expect(swaggerUiMock.default).not.toHaveBeenCalled();
     });
 

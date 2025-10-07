@@ -280,6 +280,24 @@ type CustomErrorHandler = {
 };
 ```
 
+#### `SwaggerConfig`
+
+Swagger documentation configuration.
+
+```typescript
+type SwaggerConfig = {
+  enabled?: boolean;                // Enable Swagger UI (default: false)
+  title?: string;                   // API title (default: "Frey API")
+  description?: string;             // API description
+  version?: string;                 // API version (default: "1.0.0")
+  routePrefix?: string;             // Swagger UI route (default: "/documentation")
+  uiConfig?: {
+    docExpansion?: "list" | "full" | "none";  // Operation expansion (default: "full")
+    deepLinking?: boolean;          // Enable deep linking (default: false)
+  };
+};
+```
+
 ### `OrderField`
 
 Sort field configuration.

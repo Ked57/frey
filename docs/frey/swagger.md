@@ -6,11 +6,11 @@ order: 6
 
 # Swagger Documentation
 
-Frey automatically generates interactive API documentation using Swagger/OpenAPI 3.0. This documentation is enabled by default and provides a comprehensive view of your API endpoints, schemas, and authentication requirements.
+Frey automatically generates interactive API documentation using Swagger/OpenAPI 3.0. This documentation is disabled by default and can be enabled when needed, providing a comprehensive view of your API endpoints, schemas, and authentication requirements.
 
 ## Quick Start
 
-Swagger documentation is enabled by default. Simply start your server and visit the documentation:
+Swagger documentation is disabled by default. To enable it, set `swagger.enabled: true` in your server configuration:
 
 ```typescript
 import { z } from "zod";
@@ -36,7 +36,9 @@ const fastify = Fastify({ logger: true });
 startServer(fastify, {
   entities: [userEntity],
   port: 3000,
-  // Swagger is enabled by default
+  swagger: {
+    enabled: true,  // Enable Swagger documentation
+  },
 });
 
 // Documentation available at: http://localhost:3000/documentation
@@ -68,7 +70,7 @@ startServer(fastify, {
 
 ```typescript
 type SwaggerConfig = {
-  enabled?: boolean;                // Enable Swagger UI (default: true)
+  enabled?: boolean;                // Enable Swagger UI (default: false)
   title?: string;                   // API title (default: "Frey API")
   description?: string;             // API description
   version?: string;                 // API version (default: "1.0.0")
@@ -363,16 +365,16 @@ Swagger UI provides an interactive interface for testing your API:
 
 ## Production Considerations
 
-### Disable in Production
+### Enable in Development Only
 
 ```typescript
-const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 startServer(fastify, {
   entities: [userEntity],
   port: 3000,
   swagger: {
-    enabled: !isProduction,        // Disable in production
+    enabled: isDevelopment,        // Only enable in development
   },
 });
 ```
