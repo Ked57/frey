@@ -10,6 +10,10 @@ export const navigation: NavItem[] = [
     href: "/docs/getting-started",
   },
   {
+    title: "Authentication",
+    href: "/docs/authentication",
+  },
+  {
     title: "Entity Configuration",
     href: "/docs/entity-configuration",
   },

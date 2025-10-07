@@ -552,11 +552,12 @@ startServer(fastify, {
 
 ## Authentication & Authorization
 
-A user management system with role-based access control:
+A user management system with JWT and API key authentication:
 
 ```typescript
 import { z } from "zod";
 import { defineEntity, startServer } from "frey";
+import jwt from "jsonwebtoken";
 
 const userSchema = z.object({
   id: z.string(),
@@ -575,30 +576,17 @@ const userEntity = defineEntity({
     {
       path: "/me",
       method: "GET",
-      registerRoute: async (request, reply, { server, entity }) => {
-        const userId = request.headers['x-user-id'] as string;
-        
-        if (!userId) {
-          reply.code(401).send({ error: "Unauthorized" });
-          return;
-        }
-        
-        const user = await database.users.findUnique({
-          where: { id: userId }
-        });
-        
-        if (!user) {
-          reply.code(404).send({ error: "User not found" });
-          return;
-        }
-        
-        reply.send(user);
+      auth: { jwtOnly: true },
+      registerRoute: async (request, reply) => {
+        const auth = (request as any).auth;
+        reply.send(auth.user);
       },
     },
     {
       path: "/login",
       method: "POST",
-      registerRoute: async (request, reply, { server, entity }) => {
+      auth: { requireAuth: false },
+      registerRoute: async (request, reply) => {
         const { email, password } = request.body as { email: string; password: string };
         
         const user = await database.users.findUnique({
@@ -621,7 +609,16 @@ const userEntity = defineEntity({
           data: { lastLoginAt: new Date() }
         });
         
-        const token = generateJWT(user);
+        const token = jwt.sign(
+          { 
+            sub: user.id, 
+            email: user.email, 
+            name: user.name, 
+            role: user.role 
+          },
+          "your-secret-key",
+          { expiresIn: "1h" }
+        );
         
         reply.send({
           token,
@@ -637,26 +634,30 @@ const userEntity = defineEntity({
     {
       path: "/admin-only",
       method: "GET",
-      registerRoute: async (request, reply, { server, entity }) => {
-        const userRole = request.headers['x-user-role'] as string;
-        
-        if (userRole !== 'admin') {
-          reply.code(403).send({ error: "Admin access required" });
-          return;
+      auth: { 
+        customAuth: async (request) => {
+          const auth = (request as any).auth;
+          return auth.user?.role === 'admin';
         }
-        
+      },
+      registerRoute: async (request, reply) => {
         const adminData = await getAdminData();
         reply.send(adminData);
       },
     },
+    {
+      path: "/public",
+      method: "GET",
+      auth: { requireAuth: false },
+      registerRoute: async (request, reply) => {
+        reply.send({ message: "This is a public endpoint" });
+      },
+    },
   ],
-  findAll: async (params, { request, server }) => {
-    const userRole = request.headers['x-user-role'] as string;
-    
+  findAll: async (params, { auth }) => {
     // Only admins can see all users
-    if (userRole !== 'admin') {
-      reply.code(403).send({ error: "Admin access required" });
-      return;
+    if (auth.user?.role !== 'admin') {
+      throw new Error("Admin access required");
     }
     
     const users = await database.users.findMany({
@@ -668,14 +669,10 @@ const userEntity = defineEntity({
     
     return users;
   },
-  findOne: async (param, { request, server }) => {
-    const userRole = request.headers['x-user-role'] as string;
-    const userId = request.headers['x-user-id'] as string;
-    
+  findOne: async (param, { auth }) => {
     // Users can only see their own profile, admins can see any
-    if (userRole !== 'admin' && param.id !== userId) {
-      reply.code(403).send({ error: "Access denied" });
-      return;
+    if (auth.user?.role !== 'admin' && param.id !== auth.user?.id) {
+      throw new Error("Access denied");
     }
     
     const user = await database.users.findUnique({
@@ -688,13 +685,10 @@ const userEntity = defineEntity({
     
     return user;
   },
-  create: async (params, { request, server }) => {
-    const userRole = request.headers['x-user-role'] as string;
-    
+  create: async (params, { auth }) => {
     // Only admins can create users
-    if (userRole !== 'admin') {
-      reply.code(403).send({ error: "Admin access required" });
-      return;
+    if (auth.user?.role !== 'admin') {
+      throw new Error("Admin access required");
     }
     
     const user = await database.users.create({
@@ -707,14 +701,10 @@ const userEntity = defineEntity({
     
     return user;
   },
-  update: async (params, { request, server }) => {
-    const userRole = request.headers['x-user-role'] as string;
-    const userId = request.headers['x-user-id'] as string;
-    
+  update: async (params, { auth }) => {
     // Users can only update their own profile, admins can update any
-    if (userRole !== 'admin' && params.id !== userId) {
-      reply.code(403).send({ error: "Access denied" });
-      return;
+    if (auth.user?.role !== 'admin' && params.id !== auth.user?.id) {
+      throw new Error("Access denied");
     }
     
     const user = await database.users.update({
@@ -724,18 +714,48 @@ const userEntity = defineEntity({
     
     return user;
   },
-  delete: async (params, { request, server }) => {
-    const userRole = request.headers['x-user-role'] as string;
-    
+  delete: async (params, { auth }) => {
     // Only admins can delete users
-    if (userRole !== 'admin') {
-      reply.code(403).send({ error: "Admin access required" });
-      return;
+    if (auth.user?.role !== 'admin') {
+      throw new Error("Admin access required");
     }
     
     await database.users.delete({
       where: { id: params.id }
     });
+  },
+});
+
+// Start the server with authentication
+const fastify = Fastify({ logger: true });
+startServer(fastify, {
+  entities: [userEntity],
+  port: 3000,
+  auth: {
+    enabled: true,
+    jwt: {
+      secret: "your-secret-key",
+      expiresIn: "1h",
+      extractUser: async (decoded) => ({
+        id: decoded.sub,
+        email: decoded.email,
+        name: decoded.name,
+        role: decoded.role,
+      }),
+    },
+    apiKey: {
+      validateKey: async (key) => {
+        if (key === "admin-api-key") {
+          return {
+            id: "admin-api-user",
+            email: "admin@example.com",
+            name: "Admin API User",
+            role: "admin",
+          };
+        }
+        return null;
+      },
+    },
   },
 });
 ```

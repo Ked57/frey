@@ -88,8 +88,10 @@ Server configuration options.
 ```typescript
 type ServerOptions = {
   entities: Entity[];             // Required: Array of entities
-  port: number;                   // Required: Server port
-  host?: string;                  // Optional: Server host (default: '0.0.0.0')
+  port?: number;                   // Optional: Server port (default: 3000)
+  host?: string;                   // Optional: Server host (default: 'localhost')
+  swagger?: SwaggerConfig;         // Optional: Swagger documentation config
+  auth?: AuthConfig;               // Optional: Authentication configuration
 };
 ```
 
@@ -112,7 +114,7 @@ Context object passed to handlers.
 type Context = {
   request: FastifyRequest;        // Fastify request object
   server: FastifyInstance;        // Fastify server instance
-  entity: Entity;                 // Entity definition
+  auth: AuthContext;              // Authentication context
 };
 ```
 
@@ -124,6 +126,8 @@ Custom route configuration.
 type CustomRoute = {
   path: string;                   // Route path (relative to entity)
   method: HTTPMethod;             // HTTP method
+  auth?: RouteAuthConfig;         // Optional: Route-specific auth config
+  customErrors?: CustomErrorHandler; // Optional: Custom error responses
   registerRoute: RouteHandler;    // Route handler function
 };
 ```
@@ -177,6 +181,102 @@ Extended query parameters.
 ```typescript
 type QueryParams = Params & {
   [key: string]: any;             // Additional custom parameters
+};
+```
+
+### Authentication Types
+
+#### `AuthConfig`
+
+Global authentication configuration.
+
+```typescript
+type AuthConfig = {
+  enabled?: boolean;               // Enable authentication globally
+  jwt?: JwtConfig;                // JWT configuration
+  apiKey?: ApiKeyConfig;          // API key configuration
+  requireAuth?: boolean;           // Default auth requirement (default: true when enabled)
+};
+```
+
+#### `JwtConfig`
+
+JWT authentication configuration.
+
+```typescript
+type JwtConfig = {
+  secret: string;                 // JWT signing secret
+  expiresIn?: string;             // Token expiration (default: "1h")
+  issuer?: string;                 // JWT issuer
+  audience?: string;               // JWT audience
+  extractUser?: (decoded: any) => Promise<User | null>;
+};
+```
+
+#### `ApiKeyConfig`
+
+API key authentication configuration.
+
+```typescript
+type ApiKeyConfig = {
+  headerName?: string;            // Header name (default: "x-api-key")
+  validateKey: (key: string) => Promise<User | null>;
+};
+```
+
+#### `RouteAuthConfig`
+
+Route-level authentication configuration.
+
+```typescript
+type RouteAuthConfig = {
+  requireAuth?: boolean;          // Require authentication (default: true when auth.enabled)
+  jwtOnly?: boolean;              // Require JWT authentication only
+  apiKeyOnly?: boolean;           // Require API key authentication only
+  customAuth?: (request: any) => Promise<boolean>;
+};
+```
+
+#### `AuthContext`
+
+Authentication context available in handlers.
+
+```typescript
+type AuthContext = {
+  user?: User;                     // Authenticated user (if any)
+  isAuthenticated: boolean;       // Authentication status
+  token?: string;                  // JWT token (if JWT auth)
+  apiKey?: string;                 // API key (if API key auth)
+  authMethod?: 'jwt' | 'api-key'; // Authentication method used
+};
+```
+
+#### `User`
+
+User object structure.
+
+```typescript
+type User = {
+  id: string;
+  email: string;
+  name?: string;
+  role?: string;
+  permissions?: string[];
+  metadata?: Record<string, any>;
+};
+```
+
+#### `CustomErrorHandler`
+
+Custom error response configuration.
+
+```typescript
+type CustomErrorHandler = {
+  [statusCode: number]: {
+    error: string;
+    message: string;
+    details?: any;
+  };
 };
 ```
 
