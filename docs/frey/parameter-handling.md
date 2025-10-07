@@ -21,7 +21,7 @@ Frey supports several built-in query parameters:
 - `sort` - Field to sort by
 - `order` - Sort direction (`asc` or `desc`)
 - `search` - Search term for text fields
-- `filters` - Array of field names to filter by
+- **Field filters** - Any field from your entity schema can be used as a query parameter
 
 ### Basic Usage
 
@@ -34,8 +34,13 @@ findAll: async (params, { request, server }) => {
   //   sort: 'name',
   //   order: 'asc',
   //   search: 'john',
-  //   filters: ['isActive', 'age']
+  //   isActive: true,
+  //   age: 25
   // }
+  
+  // Field filters are passed directly as key-value pairs
+  // Remove built-in parameters to get only field filters
+  const { limit, offset, sort, order, search, ...fieldFilters } = params;
   
   const users = await database.users.findMany({
     take: params.limit,
@@ -49,8 +54,7 @@ findAll: async (params, { request, server }) => {
             { email: { contains: params.search } }
           ]
         } : {},
-        // Note: filters is an array of field names, not field values
-        // You need to implement your own filtering logic based on the field names
+        fieldFilters  // Use field filters directly
       ]
     }
   });
@@ -71,11 +75,11 @@ GET /users?sort=name&order=desc
 # Search
 GET /users?search=john
 
-# Filters
-GET /users?filters=isActive&filters=age
+# Field filters
+GET /users?isActive=true&age=25
 
 # Combined
-GET /users?limit=5&offset=0&sort=createdAt&order=desc&search=admin&filters=isActive
+GET /users?limit=5&offset=0&sort=createdAt&order=desc&search=admin&isActive=true
 ```
 
 ## URL Parameters
@@ -246,7 +250,7 @@ create: async (params, { request, server }) => {
 | `sort` | string | Sort field | `?sort=name` |
 | `order` | 'asc' \| 'desc' | Sort direction | `?order=desc` |
 | `search` | string | Search term | `?search=john` |
-| `filters` | string[] | Field names to filter by | `?filters=isActive&filters=age` |
+| **Field filters** | any | Direct field filtering | `?isActive=true&age=25` |
 
 ### URL Parameters
 
@@ -314,26 +318,23 @@ findAll: async (params, { request, server }) => {
 
 ```typescript
 findAll: async (params, { request, server }) => {
-  const { category, priceRange, inStock } = request.query;
+  // Extract built-in parameters
+  const { limit, offset, sort, order, search, ...fieldFilters } = params;
   
   const whereClause: any = {};
   
-  // Handle filters array - these are field names that should be included
-  if (params.filters && params.filters.length > 0) {
-    // You can implement custom logic based on which fields are requested
-    // For example, only return products with these specific fields populated
-    params.filters.forEach(field => {
-      if (field === 'category' && category) {
-        whereClause.category = category;
-      }
-      if (field === 'price' && priceRange) {
-        const [min, max] = priceRange.split('-').map(Number);
-        whereClause.price = { gte: min, lte: max };
-      }
-      if (field === 'stock' && inStock !== undefined) {
-        whereClause.stock = inStock === 'true' ? { gt: 0 } : 0;
-      }
-    });
+  // Add field filters directly
+  Object.entries(fieldFilters).forEach(([field, value]) => {
+    if (value !== undefined) {
+      whereClause[field] = value;
+    }
+  });
+  
+  // Add custom logic for specific fields
+  if (fieldFilters.priceRange) {
+    const [min, max] = fieldFilters.priceRange.split('-').map(Number);
+    whereClause.price = { gte: min, lte: max };
+    delete whereClause.priceRange; // Remove the helper field
   }
   
   const products = await database.products.findMany({
