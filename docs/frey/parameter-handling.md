@@ -21,7 +21,7 @@ Frey supports several built-in query parameters:
 - `sort` - Field to sort by
 - `order` - Sort direction (`asc` or `desc`)
 - `search` - Search term for text fields
-- `filters` - Object with field-specific filters
+- `filters` - Array of field names to filter by
 
 ### Basic Usage
 
@@ -34,7 +34,7 @@ findAll: async (params, { request, server }) => {
   //   sort: 'name',
   //   order: 'asc',
   //   search: 'john',
-  //   filters: { isActive: true, age: { gte: 18 } }
+  //   filters: ['isActive', 'age']
   // }
   
   const users = await database.users.findMany({
@@ -49,7 +49,8 @@ findAll: async (params, { request, server }) => {
             { email: { contains: params.search } }
           ]
         } : {},
-        params.filters
+        // Note: filters is an array of field names, not field values
+        // You need to implement your own filtering logic based on the field names
       ]
     }
   });
@@ -71,10 +72,10 @@ GET /users?sort=name&order=desc
 GET /users?search=john
 
 # Filters
-GET /users?filters[isActive]=true&filters[age][gte]=18
+GET /users?filters=isActive&filters=age
 
 # Combined
-GET /users?limit=5&offset=0&sort=createdAt&order=desc&search=admin&filters[isActive]=true
+GET /users?limit=5&offset=0&sort=createdAt&order=desc&search=admin&filters=isActive
 ```
 
 ## URL Parameters
@@ -245,7 +246,7 @@ create: async (params, { request, server }) => {
 | `sort` | string | Sort field | `?sort=name` |
 | `order` | 'asc' \| 'desc' | Sort direction | `?order=desc` |
 | `search` | string | Search term | `?search=john` |
-| `filters[field]` | any | Field filter | `?filters[isActive]=true` |
+| `filters` | string[] | Field names to filter by | `?filters=isActive&filters=age` |
 
 ### URL Parameters
 
@@ -315,21 +316,24 @@ findAll: async (params, { request, server }) => {
 findAll: async (params, { request, server }) => {
   const { category, priceRange, inStock } = request.query;
   
-  const whereClause = {
-    ...params.filters,
-  };
+  const whereClause: any = {};
   
-  if (category) {
-    whereClause.category = category;
-  }
-  
-  if (priceRange) {
-    const [min, max] = priceRange.split('-').map(Number);
-    whereClause.price = { gte: min, lte: max };
-  }
-  
-  if (inStock !== undefined) {
-    whereClause.stock = inStock === 'true' ? { gt: 0 } : 0;
+  // Handle filters array - these are field names that should be included
+  if (params.filters && params.filters.length > 0) {
+    // You can implement custom logic based on which fields are requested
+    // For example, only return products with these specific fields populated
+    params.filters.forEach(field => {
+      if (field === 'category' && category) {
+        whereClause.category = category;
+      }
+      if (field === 'price' && priceRange) {
+        const [min, max] = priceRange.split('-').map(Number);
+        whereClause.price = { gte: min, lte: max };
+      }
+      if (field === 'stock' && inStock !== undefined) {
+        whereClause.stock = inStock === 'true' ? { gt: 0 } : 0;
+      }
+    });
   }
   
   const products = await database.products.findMany({
