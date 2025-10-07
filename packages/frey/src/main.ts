@@ -24,6 +24,7 @@ export type SwaggerConfig = {
     docExpansion?: "list" | "full" | "none";
     deepLinking?: boolean;
   };
+  auth?: boolean;
 };
 
 export type ServerOptions<
@@ -40,6 +41,7 @@ export type ServerOptions<
 
 let server: FastifyInstance;
 let entities: Map<string, Entity<z.ZodObject<any>>>;
+
 
 export const startServer = async <
   T extends readonly Entity<z.ZodObject<any>>[],
@@ -93,19 +95,13 @@ export const startServer = async <
     // Register Swagger UI only if not explicitly disabled
     if (opts.swagger?.enabled === true) {
       const swaggerUi = await import("@fastify/swagger-ui");
-      await fastify.register(swaggerUi.default, {
+      
+      // Register Swagger UI with optional authentication
+      const swaggerUiOptions: any = {
         routePrefix: opts.swagger?.routePrefix ?? "/documentation",
         uiConfig: {
           docExpansion: opts.swagger?.uiConfig?.docExpansion ?? "full",
           deepLinking: opts.swagger?.uiConfig?.deepLinking ?? false,
-        },
-        uiHooks: {
-          onRequest: function (request: any, reply: any, next: any) {
-            next();
-          },
-          preHandler: function (request: any, reply: any, next: any) {
-            next();
-          },
         },
         staticCSP: true,
         transformStaticCSP: (header: any) => header,
@@ -113,7 +109,31 @@ export const startServer = async <
           return swaggerObject;
         },
         transformSpecificationClone: true,
-      });
+      };
+
+      // Add authentication hooks if Swagger auth is enabled
+      if (opts.swagger?.auth === true) {
+        swaggerUiOptions.uiHooks = {
+          preHandler: async (request: any, reply: any, next: any) => {
+            // Check if user is authenticated
+            const auth = (request as any).auth;
+            if (!auth?.isAuthenticated || !auth?.user) {
+              // Redirect to login URL if provided in global auth config
+              if (opts.auth?.loginUrl) {
+                reply.redirect(opts.auth.loginUrl);
+                return;
+              }
+              
+              // Fallback: redirect to a default login page
+              reply.redirect("/login");
+              return;
+            }
+            next();
+          },
+        };
+      }
+
+      await fastify.register(swaggerUi.default, swaggerUiOptions);
     }
   }
 

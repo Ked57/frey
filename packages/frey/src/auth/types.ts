@@ -36,6 +36,7 @@ export type AuthConfig = {
   jwt?: JwtConfig;
   apiKey?: ApiKeyConfig;
   requireAuth?: boolean; // default: true when auth.enabled is true
+  loginUrl?: string; // URL to redirect unauthenticated users
 };
 
 export type RouteAuthConfig = {

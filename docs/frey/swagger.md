@@ -79,6 +79,7 @@ type SwaggerConfig = {
     docExpansion?: "list" | "full" | "none";  // Operation expansion (default: "full")
     deepLinking?: boolean;          // Enable deep linking (default: false)
   };
+  auth?: boolean;                   // Enable Swagger UI authentication (default: false)
 };
 ```
 
@@ -163,6 +164,75 @@ const userEntity = defineEntity({
       },
     },
   ],
+});
+```
+
+## Swagger UI Authentication
+
+Protect your Swagger documentation with authentication:
+
+```typescript
+startServer(fastify, {
+  entities: [userEntity],
+  port: 3000,
+  auth: {
+    enabled: true,
+    jwt: {
+      secret: "your-secret-key",
+    },
+    loginUrl: "/login",             // Redirect unauthenticated users to login
+  },
+  swagger: {
+    enabled: true,
+    auth: true,                     // Protect Swagger UI with authentication
+  },
+});
+```
+
+### Authentication Behavior
+
+When `swagger.auth` is `true`:
+
+- **Authenticated users**: Can access Swagger UI normally
+- **Unauthenticated users**: 
+  - Redirected to `auth.loginUrl` if provided in global auth config
+  - Redirected to `/login` as fallback if no `loginUrl` specified
+
+### Example with Login Redirect
+
+```typescript
+const fastify = Fastify({ logger: true });
+startServer(fastify, {
+  entities: [userEntity],
+  port: 3000,
+  auth: {
+    enabled: true,
+    jwt: {
+      secret: "your-secret-key",
+    },
+    loginUrl: "https://myapp.com/login",  // External login page
+  },
+  swagger: {
+    enabled: true,
+    auth: true,                           // Protect Swagger UI
+  },
+});
+
+// Add a login route
+fastify.get("/login", async (request, reply) => {
+  reply.send(`
+    <html>
+      <body>
+        <h1>Login Required</h1>
+        <p>Please log in to access the API documentation.</p>
+        <form action="/auth/login" method="post">
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit">Login</button>
+        </form>
+      </body>
+    </html>
+  `);
 });
 ```
 

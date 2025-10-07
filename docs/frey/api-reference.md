@@ -196,6 +196,7 @@ type AuthConfig = {
   jwt?: JwtConfig;                // JWT configuration
   apiKey?: ApiKeyConfig;          // API key configuration
   requireAuth?: boolean;           // Default auth requirement (default: true when enabled)
+  loginUrl?: string;              // URL to redirect unauthenticated users
 };
 ```
 
@@ -295,6 +296,7 @@ type SwaggerConfig = {
     docExpansion?: "list" | "full" | "none";  // Operation expansion (default: "full")
     deepLinking?: boolean;          // Enable deep linking (default: false)
   };
+  auth?: boolean;                   // Enable Swagger UI authentication (default: false)
 };
 ```
 
