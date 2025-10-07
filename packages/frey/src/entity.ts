@@ -21,11 +21,37 @@ export type Params<Schema extends z.ZodObject<any>> =
 export type Context = {
   request: FastifyRequest;
   server: FastifyInstance;
+  auth: {
+    user?: {
+      id: string;
+      email: string;
+      role?: string;
+      permissions?: string[];
+      metadata?: Record<string, any>;
+    };
+    isAuthenticated: boolean;
+    token?: string;
+    apiKey?: string;
+    authMethod?: 'jwt' | 'api-key';
+  };
 };
 
 export type CustomRoute<Schema extends z.ZodObject<any>> = {
   path: string;
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+  auth?: {
+    requireAuth?: boolean; // default: true when auth.enabled is true, false to opt-out
+    jwtOnly?: boolean;
+    apiKeyOnly?: boolean;
+    customAuth?: (request: any) => Promise<boolean>;
+  };
+  customErrors?: {
+    [statusCode: number]: {
+      error: string;
+      message: string;
+      details?: any;
+    };
+  };
   registerRoute: (
     request: FastifyRequest,
     reply: FastifyReply,
@@ -38,6 +64,19 @@ export type Entity<Schema extends z.ZodObject<any>> = {
   schema: Schema;
   customId?: string;
   customRoutes?: CustomRoute<Schema>[];
+  auth?: {
+    requireAuth?: boolean; // default: true when auth.enabled is true, false to opt-out
+    jwtOnly?: boolean;
+    apiKeyOnly?: boolean;
+    customAuth?: (request: any) => Promise<boolean>;
+  };
+  customErrors?: {
+    [statusCode: number]: {
+      error: string;
+      message: string;
+      details?: any;
+    };
+  };
   findAll: (
     params: Params<Schema>,
     context: Context,

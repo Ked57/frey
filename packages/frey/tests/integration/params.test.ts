@@ -50,9 +50,13 @@ describe("Parameter Passing Tests", () => {
       await startServer(fastify, serverOptions);
 
       // Get the registered route handler
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      expect(findAllCall).toBeDefined();
+      
+      // The route is registered with options object, handler is the second argument
+      const findAllHandler = findAllCall?.[2] as any;
       expect(findAllHandler).toBeDefined();
 
       // Test with query parameters
@@ -116,9 +120,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},
@@ -163,9 +168,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},
@@ -221,9 +227,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findOneHandler = mockGet.mock.calls.find(
+      const findOneCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user/:id",
-      )?.[1] as any;
+      );
+      const findOneHandler = findOneCall?.[2] as any;
       expect(findOneHandler).toBeDefined();
 
       const mockRequest = {
@@ -279,9 +286,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findOneHandler = mockGet.mock.calls.find(
+      const findOneCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user/:uuid",
-      )?.[1] as any;
+      );
+      const findOneHandler = findOneCall?.[2] as any;
       expect(findOneHandler).toBeDefined();
 
       const mockRequest = {
@@ -335,9 +343,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},
@@ -398,9 +407,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},
@@ -450,9 +460,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findOneHandler = mockGet.mock.calls.find(
+      const findOneCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user/:id",
-      )?.[1] as any;
+      );
+      const findOneHandler = findOneCall?.[2] as any;
 
       const mockRequest = {
         params: { id: "123" },
@@ -506,9 +517,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findOneHandler = mockGet.mock.calls.find(
+      const findOneCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user/:uuid",
-      )?.[1] as any;
+      );
+      const findOneHandler = findOneCall?.[2] as any;
 
       const mockRequest = {
         params: { uuid: "abc-123" },
@@ -561,9 +573,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},
@@ -624,9 +637,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
       expect(findAllHandler).toBeDefined();
 
       const mockRequest = {
@@ -684,9 +698,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
       expect(findAllHandler).toBeDefined();
 
       const mockRequest = {
@@ -744,9 +759,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},
@@ -799,9 +815,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},
@@ -854,9 +871,10 @@ describe("Parameter Passing Tests", () => {
 
       await startServer(fastify, serverOptions);
 
-      const findAllHandler = mockGet.mock.calls.find(
+      const findAllCall = mockGet.mock.calls.find(
         (call) => call[0] === "/user",
-      )?.[1] as any;
+      );
+      const findAllHandler = findAllCall?.[2] as any;
 
       const mockRequest = {
         params: {},

@@ -9,6 +9,10 @@ import {
   registerDeleteRoute,
   registerCustomRoutes,
 } from "./routes/index.js";
+import type { AuthConfig } from "./auth/types.js";
+import { createJwtMiddleware } from "./auth/middleware.js";
+import { createApiKeyMiddleware } from "./auth/middleware.js";
+import { createAuthContextMiddleware } from "./auth/middleware.js";
 
 export type SwaggerConfig = {
   enabled?: boolean;
@@ -31,6 +35,7 @@ export type ServerOptions<
   host?: string;
   entities: T;
   swagger?: SwaggerConfig;
+  auth?: AuthConfig;
 };
 
 let server: FastifyInstance;
@@ -44,6 +49,22 @@ export const startServer = async <
 ) => {
   server = fastify;
   entities = new Map();
+
+  // Register authentication middleware if enabled BEFORE registering routes
+  if (opts.auth?.enabled) {
+    // Register JWT middleware if configured
+    if (opts.auth.jwt) {
+      await fastify.register(createJwtMiddleware(opts.auth.jwt));
+    }
+
+    // Register API key middleware if configured
+    if (opts.auth.apiKey) {
+      await fastify.register(createApiKeyMiddleware(opts.auth.apiKey));
+    }
+
+    // Register auth context injection middleware
+    await fastify.register(createAuthContextMiddleware());
+  }
 
   // Register Swagger documentation if enabled
   if (opts.swagger?.enabled !== false) {
@@ -100,14 +121,14 @@ export const startServer = async <
     entities.set(entity.name, entity);
 
     // Register all CRUD routes
-    registerFindAllRoute(server, entity);
-    registerFindOneRoute(server, entity);
-    registerCreateRoute(server, entity);
-    registerUpdateRoute(server, entity);
-    registerDeleteRoute(server, entity);
+    registerFindAllRoute(server, entity, opts.auth);
+    registerFindOneRoute(server, entity, opts.auth);
+    registerCreateRoute(server, entity, opts.auth);
+    registerUpdateRoute(server, entity, opts.auth);
+    registerDeleteRoute(server, entity, opts.auth);
 
     // Register custom routes
-    registerCustomRoutes(server, entity);
+    registerCustomRoutes(server, entity, opts.auth);
   });
 
   try {
