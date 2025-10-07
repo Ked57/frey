@@ -52,8 +52,11 @@ export const startServer = async <
   server = fastify;
   entities = new Map();
 
+  // Auto-enable auth if any auth method is configured
+  const authEnabled = opts.auth?.enabled ?? (opts.auth?.jwt || opts.auth?.apiKey);
+  
   // Register authentication middleware if enabled BEFORE registering routes
-  if (opts.auth?.enabled) {
+  if (authEnabled && opts.auth) {
     // Register JWT middleware if configured
     if (opts.auth.jwt) {
       await fastify.register(createJwtMiddleware(opts.auth.jwt));
@@ -68,8 +71,11 @@ export const startServer = async <
     await fastify.register(createAuthContextMiddleware());
   }
 
+  // Auto-enable Swagger if swagger config is provided
+  const swaggerEnabled = opts.swagger?.enabled ?? !!opts.swagger;
+  
   // Register Swagger documentation if enabled
-  if (opts.swagger?.enabled === true) {
+  if (swaggerEnabled === true) {
     const swagger = await import("@fastify/swagger");
     await fastify.register(swagger.default, {
       openapi: {
@@ -140,7 +146,7 @@ export const startServer = async <
   opts.entities.forEach((entity) => {
     entities.set(entity.name, entity);
 
-    // Register all CRUD routes
+    // Register all CRUD routes with RBAC configuration
     registerFindAllRoute(server, entity, opts.auth);
     registerFindOneRoute(server, entity, opts.auth);
     registerCreateRoute(server, entity, opts.auth);

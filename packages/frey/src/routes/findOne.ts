@@ -7,6 +7,7 @@ import { zodToOpenAPI, generatePathSchema } from "../helpers/zod-to-openapi.js";
 import { getReadErrorResponses } from "../helpers/error-schemas.js";
 import { getAuthErrorResponses } from "../helpers/auth-error-schemas.js";
 import { createRouteAuthMiddleware } from "../auth/middleware.js";
+import { createRbacMiddleware } from "../auth/rbac.js";
 
 export const registerFindOneRoute = (
   server: FastifyInstance,
@@ -22,12 +23,24 @@ export const registerFindOneRoute = (
   const preHandlers = [];
   
   // Add authentication middleware if entity requires auth
-  // Default to true when auth is enabled globally, unless explicitly set to false
+  // Auto-enable auth if any auth method is configured
+  const authEnabled = globalAuth?.enabled ?? (globalAuth?.jwt || globalAuth?.apiKey);
   const authConfig = entity.auth || {};
-  const requiresAuth = globalAuth?.enabled && authConfig.requireAuth !== false;
+  const requiresAuth = authEnabled && authConfig.requireAuth !== false;
   
   if (requiresAuth) {
     preHandlers.push(createRouteAuthMiddleware(authConfig, globalAuth));
+    
+    // Add RBAC middleware if RBAC is enabled
+    const rbacEnabled = globalAuth?.rbac?.enabled ?? !!globalAuth?.rbac;
+    if (rbacEnabled) {
+      preHandlers.push(createRbacMiddleware(
+        entity.name,
+        'read',
+        entity.rbac,
+        globalAuth?.rbac?.customRoles
+      ));
+    }
   }
 
   // Prepare response schema with auth errors if needed

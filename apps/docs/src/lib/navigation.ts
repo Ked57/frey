@@ -26,12 +26,16 @@ export const navigation: NavItem[] = [
     href: "/docs/type-safety",
   },
   {
-    title: "Swagger Documentation",
-    href: "/docs/swagger",
-  },
-  {
     title: "Authentication",
     href: "/docs/authentication",
+  },
+  {
+    title: "Role-Based Access Control",
+    href: "/docs/rbac",
+  },
+  {
+    title: "Swagger Documentation",
+    href: "/docs/swagger",
   },
   {
     title: "API Reference",

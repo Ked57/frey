@@ -12,6 +12,8 @@ Frey provides comprehensive authentication support with JWT tokens and API keys,
 
 When authentication is enabled globally, all routes require authentication by default. Individual routes can opt-out by setting `requireAuth: false`. This secure-by-default approach ensures your API is protected unless explicitly made public.
 
+Frey also includes a comprehensive **Role-Based Access Control (RBAC)** system that works seamlessly with authentication. See the [RBAC documentation](/docs/rbac) for detailed information about role-based permissions.
+
 ## Quick Start
 
 ```typescript

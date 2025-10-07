@@ -36,6 +36,26 @@ export type Context = {
   };
 };
 
+export type EntityRbacConfig = {
+  ownerField?: string; // default: 'id'
+  operations?: {
+    [roleName: string]: {
+      findAll?: 'All' | 'Own' | 'Custom';
+      findOne?: 'All' | 'Own' | 'Custom';
+      create?: 'All' | 'Own' | 'Custom';
+      update?: 'All' | 'Own' | 'Custom';
+      delete?: 'All' | 'Own' | 'Custom';
+    };
+  };
+  customChecks?: {
+    findAll?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    findOne?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    create?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    update?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    delete?: (context: any, entity: any, operation: string) => Promise<boolean>;
+  };
+};
+
 export type CustomRoute<Schema extends z.ZodObject<any>> = {
   path: string;
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
@@ -77,6 +97,7 @@ export type Entity<Schema extends z.ZodObject<any>> = {
       details?: any;
     };
   };
+  rbac?: EntityRbacConfig;
   findAll: (
     params: Params<Schema>,
     context: Context,

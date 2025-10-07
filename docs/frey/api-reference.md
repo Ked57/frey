@@ -73,6 +73,9 @@ type Entity<Schema extends z.ZodObject<any>> = {
   schema: Schema;                  // Required: Zod schema
   customId?: string;              // Optional: Custom ID field name
   customRoutes?: CustomRoute[];    // Optional: Custom routes
+  auth?: EntityAuthConfig;        // Optional: Entity-level auth config
+  customErrors?: EntityErrorConfig; // Optional: Custom error responses
+  rbac?: EntityRbacConfig;        // Optional: RBAC configuration
   findAll: Handler;               // Required: GET /entity handler
   findOne?: Handler;              // Optional: GET /entity/:id handler
   create?: Handler;               // Optional: POST /entity handler
@@ -197,6 +200,7 @@ type AuthConfig = {
   apiKey?: ApiKeyConfig;          // API key configuration
   requireAuth?: boolean;           // Default auth requirement (default: true when enabled)
   loginUrl?: string;              // URL to redirect unauthenticated users
+  rbac?: RbacConfig;              // RBAC configuration
 };
 ```
 
@@ -280,6 +284,147 @@ type CustomErrorHandler = {
   };
 };
 ```
+
+```
+
+### RBAC Types
+
+#### `RbacConfig`
+
+Global RBAC configuration.
+
+```typescript
+type RbacConfig = {
+  enabled?: boolean;               // Enable RBAC (auto-enabled when config is present)
+  customRoles?: {                 // Custom role definitions
+    [roleName: string]: RolePermissions;
+  };
+};
+```
+
+#### `EntityRbacConfig`
+
+Entity-level RBAC configuration.
+
+```typescript
+type EntityRbacConfig = {
+  ownerField?: string;             // Field that determines ownership (default: "id")
+  operations?: {                  // Role-specific operation overrides
+    [roleName: string]: {
+      findAll?: PermissionScope;
+      findOne?: PermissionScope;
+      read?: PermissionScope;
+      create?: PermissionScope;
+      update?: PermissionScope;
+      delete?: PermissionScope;
+    };
+  };
+  customChecks?: {                // Custom permission logic
+    findAll?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    findOne?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    read?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    create?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    update?: (context: any, entity: any, operation: string) => Promise<boolean>;
+    delete?: (context: any, entity: any, operation: string) => Promise<boolean>;
+  };
+};
+```
+
+#### `RolePermissions`
+
+Role permission configuration.
+
+```typescript
+type RolePermissions = {
+  create?: PermissionScope | Permission;
+  read?: PermissionScope | Permission;
+  update?: PermissionScope | Permission;
+  delete?: PermissionScope | Permission;
+};
+```
+
+#### `PermissionScope`
+
+Permission scope types.
+
+```typescript
+type PermissionScope = 'All' | 'Own' | 'Custom';
+```
+
+#### `Permission`
+
+Detailed permission configuration.
+
+```typescript
+type Permission = {
+  scope: PermissionScope;
+  customCheck?: (context: any, entity: any, operation: string) => Promise<boolean>;
+};
+```
+
+#### Role Constants
+
+```typescript
+// Default roles
+export const FREY_ROLES = {
+  ADMIN: "admin",
+  USER: "user",
+} as const;
+
+// Common custom roles
+export const COMMON_ROLES = {
+  MODERATOR: "moderator",
+  GUEST: "guest",
+  EDITOR: "editor",
+  VIEWER: "viewer",
+} as const;
+
+// Helper to create custom role constants
+export function createRoleConstants<T extends Record<string, string>>(
+  customRoles: T
+): typeof FREY_ROLES & T;
+```
+
+### RBAC Functions
+
+#### `checkRbacPermission`
+
+Check if a user has permission for an operation.
+
+```typescript
+function checkRbacPermission(
+  user: User,
+  entityName: string,
+  operation: 'create' | 'read' | 'update' | 'delete',
+  entityData: any,
+  context: Context,
+  entityRbacConfig?: EntityRbacConfig,
+  customRoles?: { [roleName: string]: RolePermissions }
+): Promise<boolean>
+```
+
+#### `getDefaultRoles`
+
+Get default role permissions.
+
+```typescript
+function getDefaultRoles(): Record<string, RolePermissions>
+```
+
+#### `createRbacMiddleware`
+
+Create RBAC middleware for route protection.
+
+```typescript
+function createRbacMiddleware(
+  entityName: string,
+  operation: 'create' | 'read' | 'update' | 'delete',
+  entityRbacConfig?: EntityRbacConfig,
+  customRoles?: { [roleName: string]: RolePermissions }
+): Function
+```
+
+### Swagger Types
 
 #### `SwaggerConfig`
 

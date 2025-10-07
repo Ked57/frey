@@ -760,6 +760,241 @@ startServer(fastify, {
 });
 ```
 
+```
+
+## Role-Based Access Control (RBAC)
+
+A comprehensive example showing RBAC with custom roles:
+
+```typescript
+import { z } from "zod";
+import Fastify from "fastify";
+import { defineEntity, startServer } from "frey";
+import { FREY_ROLES, createRoleConstants } from "frey/auth/types";
+
+// Define custom roles for this application
+const customRoles = {
+  MODERATOR: "moderator",
+  GUEST: "guest",
+  EDITOR: "editor",
+};
+
+const ROLES = createRoleConstants(customRoles);
+
+// User schema with role field
+const userSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string().email(),
+  role: z.enum([
+    ROLES.ADMIN,
+    ROLES.USER,
+    ROLES.MODERATOR,
+    ROLES.GUEST,
+    ROLES.EDITOR,
+  ]),
+  createdAt: z.date(),
+});
+
+// Post schema with author ownership
+const postSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  content: z.string(),
+  authorId: z.string(), // Ownership field
+  status: z.enum(["draft", "published", "archived"]),
+  createdAt: z.date(),
+});
+
+// User entity with RBAC
+const userEntity = defineEntity({
+  name: "user",
+  schema: userSchema,
+  rbac: {
+    ownerField: "id",
+    operations: {
+      [ROLES.ADMIN]: { delete: "All" },     // Admins can delete any user
+      [ROLES.USER]: { delete: "Own" },       // Users can only delete themselves
+      [ROLES.MODERATOR]: { delete: "All" },   // Moderators can delete any user
+      [ROLES.GUEST]: { read: "All" },         // Guests can only read
+    },
+    customChecks: {
+      update: async (context, entity, operation) => {
+        const user = context.auth.user;
+        // Custom logic: users can only update their own profile
+        // unless they're admin or moderator
+        if (user?.role === ROLES.ADMIN || user?.role === ROLES.MODERATOR) {
+          return true;
+        }
+        return entity.id === user?.id;
+      }
+    }
+  },
+  findAll: async (params, { auth }) => {
+    // Return users based on role permissions
+    const users = await database.users.findMany();
+    return users;
+  },
+  create: async (params, { auth }) => {
+    return await database.users.create({
+      data: {
+        ...params,
+        id: generateId(),
+        createdAt: new Date(),
+      }
+    });
+  },
+  update: async (params, { auth }) => {
+    return await database.users.update({
+      where: { id: params.id },
+      data: params,
+    });
+  },
+  delete: async (params, { auth }) => {
+    await database.users.delete({
+      where: { id: params.id }
+    });
+  },
+});
+
+// Post entity with content management RBAC
+const postEntity = defineEntity({
+  name: "post",
+  schema: postSchema,
+  rbac: {
+    ownerField: "authorId",
+    operations: {
+      [ROLES.ADMIN]: {
+        create: "All",
+        read: "All",
+        update: "All",
+        delete: "All",
+      },
+      [ROLES.EDITOR]: {
+        create: "All",
+        read: "All",
+        update: "All",
+        delete: "Own", // Editors can only delete their own posts
+      },
+      [ROLES.USER]: {
+        create: "Own",
+        read: "All",
+        update: "Own",
+        delete: "Own",
+      },
+      [ROLES.GUEST]: {
+        read: "All", // Guests can only read published posts
+      },
+    },
+    customChecks: {
+      read: async (context, entity, operation) => {
+        const user = context.auth.user;
+        
+        // Guests can only read published posts
+        if (user?.role === ROLES.GUEST) {
+          return entity.status === "published";
+        }
+        
+        // Others can read all posts
+        return true;
+      },
+      update: async (context, entity, operation) => {
+        const user = context.auth.user;
+        
+        // Users can only update draft posts
+        if (user?.role === ROLES.USER && entity.status !== "draft") {
+          return false;
+        }
+        
+        // Editors and admins can update any post
+        return true;
+      },
+      delete: async (context, entity, operation) => {
+        const user = context.auth.user;
+        
+        // Can't delete published posts unless admin
+        if (entity.status === "published") {
+          return user?.role === ROLES.ADMIN;
+        }
+        
+        return true;
+      }
+    }
+  },
+  findAll: async (params, { auth }) => {
+    const posts = await database.posts.findMany({
+      where: {
+        // Apply role-based filtering
+        ...(auth.user?.role === ROLES.GUEST ? { status: "published" } : {}),
+        ...params.filters,
+      },
+    });
+    return posts;
+  },
+  create: async (params, { auth }) => {
+    return await database.posts.create({
+      data: {
+        ...params,
+        id: generateId(),
+        authorId: auth.user?.id, // Set author to current user
+        createdAt: new Date(),
+      }
+    });
+  },
+  update: async (params, { auth }) => {
+    return await database.posts.update({
+      where: { id: params.id },
+      data: params,
+    });
+  },
+  delete: async (params, { auth }) => {
+    await database.posts.delete({
+      where: { id: params.id }
+    });
+  },
+});
+
+// Start server with RBAC configuration
+const fastify = Fastify({ logger: true });
+
+startServer(fastify, {
+  entities: [userEntity, postEntity],
+  port: 3000,
+  auth: {
+    jwt: {
+      secret: process.env.JWT_SECRET!,
+      expiresIn: "24h",
+    },
+    rbac: {
+      customRoles: {
+        [ROLES.MODERATOR]: {
+          create: "All",
+          read: "All",
+          update: "All",
+          delete: "Custom", // Custom logic for delete
+        },
+        [ROLES.GUEST]: {
+          read: "All",
+        },
+        [ROLES.EDITOR]: {
+          create: "All",
+          read: "All",
+          update: "All",
+          delete: "Own",
+        },
+      },
+    },
+  },
+  swagger: {
+    title: "Content Management API",
+    description: "API with role-based access control",
+  },
+});
+
+console.log("Server started with RBAC enabled");
+console.log("Available roles:", Object.values(ROLES));
+```
+
 ## Utility Functions
 
 Common utility functions used in the examples:
