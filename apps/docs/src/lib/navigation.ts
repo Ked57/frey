@@ -10,10 +10,6 @@ export const navigation: NavItem[] = [
     href: "/docs/getting-started",
   },
   {
-    title: "Authentication",
-    href: "/docs/authentication",
-  },
-  {
     title: "Entity Configuration",
     href: "/docs/entity-configuration",
   },
@@ -28,6 +24,14 @@ export const navigation: NavItem[] = [
   {
     title: "Type Safety",
     href: "/docs/type-safety",
+  },
+  {
+    title: "Swagger Documentation",
+    href: "/docs/swagger",
+  },
+  {
+    title: "Authentication",
+    href: "/docs/authentication",
   },
   {
     title: "API Reference",

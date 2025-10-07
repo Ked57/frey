@@ -1,7 +1,7 @@
 ---
 title: API Reference
 description: Complete reference for all Frey APIs, types, and generated routes
-order: 6
+order: 8
 ---
 
 # API Reference

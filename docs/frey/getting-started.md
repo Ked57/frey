@@ -122,11 +122,12 @@ curl -X DELETE http://localhost:3000/users/1
 
 Now that you have a basic understanding of Frey, explore these topics:
 
-- [Authentication](./authentication.md) - Secure your APIs with JWT and API key authentication
 - [Entity Configuration](./entity-configuration.md) - Learn about advanced entity options
 - [Custom Routes](./custom-routes.md) - Add custom endpoints to your entities
 - [Parameter Handling](./parameter-handling.md) - Understand how Frey handles query parameters
 - [Type Safety](./type-safety.md) - Leverage TypeScript for maximum type safety
+- [Swagger Documentation](./swagger.md) - Generate interactive API documentation
+- [Authentication](./authentication.md) - Secure your APIs with JWT and API key authentication
 - [Examples](./examples.md) - See real-world examples and use cases
 
 ## Need Help?

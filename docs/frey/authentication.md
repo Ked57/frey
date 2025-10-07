@@ -1,7 +1,7 @@
 ---
 title: Authentication
 description: Secure your APIs with JWT and API key authentication
-order: 5
+order: 7
 ---
 
 # Authentication

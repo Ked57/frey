@@ -1,7 +1,7 @@
 ---
 title: Examples
 description: Real-world examples and use cases for building APIs with Frey
-order: 7
+order: 9
 ---
 
 # Examples
