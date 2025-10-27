@@ -43,7 +43,7 @@ jobs:
           npm audit --json > audit-results.json || echo "Audit completed with issues"
           
       - name: Upload security report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: security-report-${{ github.run_number }}
           path: |
@@ -80,7 +80,7 @@ jobs:
         continue-on-error: true
         
       - name: Upload CodeQL results as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: codeql-results-${{ github.run_number }}
@@ -116,7 +116,7 @@ jobs:
           npx npm-check-updates --format group >> outdated-report.md || echo "No outdated packages found"
           
       - name: Upload outdated report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: outdated-report-${{ github.run_number }}
           path: outdated-report.md
@@ -149,7 +149,7 @@ jobs:
           npx license-checker --summary >> license-report.md || echo "License check completed"
           
       - name: Upload license report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: license-report-${{ github.run_number }}
           path: license-report.md
