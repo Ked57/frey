@@ -10,6 +10,7 @@ import { createRouteAuthMiddleware } from "../auth/middleware.js";
 import { createRbacMiddleware } from "../auth/rbac.js";
 import type { CqrsEvent } from "../cqrs/types.js";
 import { publishCqrsEvent } from "../cqrs/state.js";
+import { getCacheConfig } from "../cache/state.js";
 
 export const registerFindAllRoute = (
   server: FastifyInstance,
@@ -82,11 +83,28 @@ export const registerFindAllRoute = (
         isIdSpecific: false,
       });
 
+      const cache = getCacheConfig(server);
+      const shouldUseCache = cache.enabled && cache.store;
+      const cacheKey = shouldUseCache
+        ? `${cache.keyPrefix ?? "frey:cache"}:${entity.name}:findAll:${JSON.stringify(params)}`
+        : undefined;
+      if (shouldUseCache && cacheKey) {
+        const cached = await cache.store!.get(cacheKey);
+        if (cached !== undefined) {
+          reply.send(cached);
+          return;
+        }
+      }
+
       const result = await entity.findAll(params, {
         request,
         server,
         auth: (request as any).auth,
       });
+
+      if (shouldUseCache && cacheKey) {
+        await cache.store!.set(cacheKey, result);
+      }
 
       // v3 CQRS slice: emit query event when enabled (list/reads).
       await publishCqrsEvent({

@@ -10,6 +10,7 @@ import { createRouteAuthMiddleware } from "../auth/middleware.js";
 import { createRbacMiddleware } from "../auth/rbac.js";
 import { publishCqrsEvent } from "../cqrs/state.js";
 import type { CqrsEvent } from "../cqrs/types.js";
+import { invalidateEntityListCache } from "../cache/state.js";
 
 export const registerDeleteRoute = (
   server: FastifyInstance,
@@ -108,6 +109,7 @@ export const registerDeleteRoute = (
           operation: "delete",
           payload: { id: idValue },
         } satisfies CqrsEvent);
+        await invalidateEntityListCache(server, entity.name);
         reply.send({ success: true });
       } catch (error) {
         if (error instanceof Error && error.message.includes("parameter")) {

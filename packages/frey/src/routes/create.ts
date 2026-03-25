@@ -10,6 +10,7 @@ import { createRouteAuthMiddleware } from "../auth/middleware.js";
 import { createRbacMiddleware } from "../auth/rbac.js";
 import type { CqrsEvent } from "../cqrs/types.js";
 import { publishCqrsEvent } from "../cqrs/state.js";
+import { invalidateEntityListCache, invalidatePrefixedCache } from "../cache/state.js";
 
 export const registerCreateRoute = (
   server: FastifyInstance,
@@ -101,6 +102,11 @@ export const registerCreateRoute = (
         operation: "create",
         payload: params,
       } satisfies CqrsEvent);
+      await invalidateEntityListCache((request as any).server ?? server, entity.name);
+      await invalidatePrefixedCache(
+        (request as any).server ?? server,
+        `${entity.name}:findAll:`,
+      );
 
       reply.send(result);
     } catch (error) {

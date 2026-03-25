@@ -16,6 +16,9 @@ import { setCqrsEventBus } from "./cqrs/state.js";
 import { createInMemoryCqrsEventBus, defaultCqrsEventBus } from "./cqrs/index.js";
 import type { CqrsEventBus } from "./cqrs/types.js";
 import type { CqrsConfig } from "./cqrs/types.js";
+import type { CacheConfig } from "./cache/types.js";
+import { createInMemoryCacheStore } from "./cache/memory-store.js";
+import { setCacheConfig } from "./cache/state.js";
 
 export type SwaggerConfig = {
   enabled?: boolean;
@@ -41,6 +44,7 @@ export type ServerOptions<
   swagger?: SwaggerConfig;
   auth?: AuthConfig;
   cqrs?: CqrsConfig;
+  cache?: CacheConfig;
 };
 
 let server: FastifyInstance;
@@ -64,6 +68,16 @@ export const registerFrey = async <
     ? opts.cqrs?.eventBus ?? createInMemoryCqrsEventBus()
     : defaultCqrsEventBus();
   setCqrsEventBus(cqrsEventBus);
+
+  const cacheEnabled = opts.cache?.enabled ?? false;
+  const cacheStore = cacheEnabled
+    ? opts.cache?.store ?? createInMemoryCacheStore()
+    : undefined;
+  setCacheConfig(fastify, {
+    enabled: cacheEnabled,
+    store: cacheStore,
+    keyPrefix: opts.cache?.keyPrefix,
+  });
 
   // Always provide a neutral auth context shape so entity handlers can rely on
   // `context.auth` existing even when auth is disabled for the route.

@@ -30,6 +30,7 @@ export const buildTestApp = async <
     swagger: opts.swagger,
     auth: opts.auth,
     cqrs: opts.cqrs,
+    cache: opts.cache,
   } satisfies ServerOptions<T>;
 
   await registerFrey(app, serverOptions);
