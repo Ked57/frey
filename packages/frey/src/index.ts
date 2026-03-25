@@ -1,5 +1,5 @@
 // Main exports
-export { startServer } from "./main.js";
+export { registerFrey, startServer } from "./main.js";
 export { defineEntity } from "./entity.js";
 
 // Types
