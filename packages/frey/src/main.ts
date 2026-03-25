@@ -33,6 +33,11 @@ export type SwaggerConfig = {
   auth?: boolean;
 };
 
+export type CorsConfig = {
+  enabled?: boolean;
+  origin?: string | string[] | boolean;
+};
+
 export type ServerOptions<
   T extends readonly Entity<z.ZodObject<any>>[] = readonly Entity<
     z.ZodObject<any>
@@ -43,6 +48,7 @@ export type ServerOptions<
   entities: T;
   swagger?: SwaggerConfig;
   auth?: AuthConfig;
+  cors?: CorsConfig;
   cqrs?: CqrsConfig;
   cache?: CacheConfig;
 };
@@ -98,6 +104,14 @@ export const registerFrey = async <
     if (opts.auth.apiKey) {
       await fastify.register(createApiKeyMiddleware(opts.auth.apiKey));
     }
+  }
+
+  const corsEnabled = opts.cors?.enabled ?? false;
+  if (corsEnabled) {
+    const cors = await import("@fastify/cors");
+    await fastify.register(cors.default, {
+      origin: opts.cors?.origin ?? true,
+    });
   }
 
   // Auto-enable Swagger if swagger config is provided

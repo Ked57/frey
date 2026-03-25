@@ -31,6 +31,7 @@ export const buildTestApp = async <
     auth: opts.auth,
     cqrs: opts.cqrs,
     cache: opts.cache,
+    cors: opts.cors,
   } satisfies ServerOptions<T>;
 
   await registerFrey(app, serverOptions);

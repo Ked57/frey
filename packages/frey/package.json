@@ -61,6 +61,7 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
+    "@fastify/cors": "^11.2.0",
     "@fastify/swagger": "^9.1.0",
     "@fastify/swagger-ui": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.10",
