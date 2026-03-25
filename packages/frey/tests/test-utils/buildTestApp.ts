@@ -29,6 +29,7 @@ export const buildTestApp = async <
     entities: opts.entities,
     swagger: opts.swagger,
     auth: opts.auth,
+    cqrs: opts.cqrs,
   } satisfies ServerOptions<T>;
 
   await registerFrey(app, serverOptions);

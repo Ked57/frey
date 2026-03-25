@@ -12,6 +12,10 @@ import {
 import type { AuthConfig } from "./auth/types.js";
 import { createJwtMiddleware } from "./auth/middleware.js";
 import { createApiKeyMiddleware } from "./auth/middleware.js";
+import { setCqrsEventBus } from "./cqrs/state.js";
+import { createInMemoryCqrsEventBus, defaultCqrsEventBus } from "./cqrs/index.js";
+import type { CqrsEventBus } from "./cqrs/types.js";
+import type { CqrsConfig } from "./cqrs/types.js";
 
 export type SwaggerConfig = {
   enabled?: boolean;
@@ -36,10 +40,12 @@ export type ServerOptions<
   entities: T;
   swagger?: SwaggerConfig;
   auth?: AuthConfig;
+  cqrs?: CqrsConfig;
 };
 
 let server: FastifyInstance;
 let entities: Map<string, Entity<z.ZodObject<any>>>;
+let cqrsEventBus: CqrsEventBus;
 
 export const registerFrey = async <
   T extends readonly Entity<z.ZodObject<any>>[],
@@ -52,6 +58,12 @@ export const registerFrey = async <
 
   // Auto-enable auth if any auth method is configured
   const authEnabled = opts.auth?.enabled ?? (opts.auth?.jwt || opts.auth?.apiKey);
+
+  const cqrsEnabled = opts.cqrs?.enabled ?? false;
+  const cqrsEventBus = cqrsEnabled
+    ? opts.cqrs?.eventBus ?? createInMemoryCqrsEventBus()
+    : defaultCqrsEventBus();
+  setCqrsEventBus(cqrsEventBus);
 
   // Always provide a neutral auth context shape so entity handlers can rely on
   // `context.auth` existing even when auth is disabled for the route.

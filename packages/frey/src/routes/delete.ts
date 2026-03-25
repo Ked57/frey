@@ -8,6 +8,8 @@ import { getDeleteErrorResponses } from "../helpers/error-schemas.js";
 import { getAuthErrorResponses } from "../helpers/auth-error-schemas.js";
 import { createRouteAuthMiddleware } from "../auth/middleware.js";
 import { createRbacMiddleware } from "../auth/rbac.js";
+import { publishCqrsEvent } from "../cqrs/state.js";
+import type { CqrsEvent } from "../cqrs/types.js";
 
 export const registerDeleteRoute = (
   server: FastifyInstance,
@@ -100,6 +102,12 @@ export const registerDeleteRoute = (
           server,
           auth: (request as any).auth,
         });
+        await publishCqrsEvent({
+          type: "command.executed",
+          entity: entity.name,
+          operation: "delete",
+          payload: { id: idValue },
+        } satisfies CqrsEvent);
         reply.send({ success: true });
       } catch (error) {
         if (error instanceof Error && error.message.includes("parameter")) {

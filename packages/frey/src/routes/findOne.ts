@@ -8,6 +8,8 @@ import { getReadErrorResponses } from "../helpers/error-schemas.js";
 import { getAuthErrorResponses } from "../helpers/auth-error-schemas.js";
 import { createRouteAuthMiddleware } from "../auth/middleware.js";
 import { createRbacMiddleware } from "../auth/rbac.js";
+import { publishCqrsEvent } from "../cqrs/state.js";
+import type { CqrsEvent } from "../cqrs/types.js";
 
 export const registerFindOneRoute = (
   server: FastifyInstance,
@@ -95,6 +97,15 @@ export const registerFindOneRoute = (
           server,
           auth: (request as any).auth,
         });
+
+        // v3 CQRS slice: emit query event when enabled (single reads).
+        await publishCqrsEvent({
+          type: "query.executed",
+          entity: entity.name,
+          operation: "findOne",
+          payload: { id: idValue, idField },
+        } satisfies CqrsEvent);
+
         reply.send(result);
       } catch (error) {
         if (error instanceof Error && error.message.includes("parameter")) {
