@@ -1,4 +1,4 @@
-import { type FastifyInstance } from "fastify";
+import { type FastifyInstance, type FastifyRequest, type FastifyReply } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import type { AuthConfig } from "../auth/types.js";
@@ -81,7 +81,7 @@ export const registerCreateRoute = (
     routeOptions.preHandler = preHandlers;
   }
 
-  server.post(`/${entity.name}`, routeOptions, async (request, reply) => {
+  server.post(`/${entity.name}`, routeOptions, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const params = parseParams({
         params: request.body,

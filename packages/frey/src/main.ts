@@ -19,6 +19,7 @@ import type { CqrsConfig } from "./cqrs/types.js";
 import type { CacheConfig } from "./cache/types.js";
 import { createInMemoryCacheStore } from "./cache/memory-store.js";
 import { setCacheConfig } from "./cache/state.js";
+import type { FastifyCorsOptions } from "@fastify/cors";
 
 export type SwaggerConfig = {
   enabled?: boolean;
@@ -51,6 +52,9 @@ export type ServerOptions<
   cors?: CorsConfig;
   cqrs?: CqrsConfig;
   cache?: CacheConfig;
+  websocket?: {
+    enabled?: boolean;
+  };
 };
 
 let server: FastifyInstance;
@@ -190,6 +194,11 @@ export const registerFrey = async <
 
       await fastify.register(swaggerUi.default, swaggerUiOptions);
     }
+  }
+
+  if (opts.websocket?.enabled) {
+    const websocketPlugin = await import("@fastify/websocket");
+    await fastify.register(websocketPlugin.default);
   }
 
   opts.entities.forEach((entity) => {

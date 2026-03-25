@@ -1,4 +1,8 @@
-import { type FastifyInstance } from "fastify";
+import {
+  type FastifyInstance,
+  type FastifyRequest,
+  type FastifyReply,
+} from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import type { AuthConfig } from "../auth/types.js";
@@ -75,7 +79,10 @@ export const registerFindAllRoute = (
     routeOptions.preHandler = preHandlers;
   }
 
-  server.get(`/${entity.name}`, routeOptions, async (request, reply) => {
+  server.get(
+    `/${entity.name}`,
+    routeOptions,
+    async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const params = parseParams({
         params: request.query,
@@ -217,5 +224,6 @@ export const registerFindAllRoute = (
         });
       }
     }
-  });
+    },
+  );
 };
