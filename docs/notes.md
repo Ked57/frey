@@ -122,6 +122,7 @@ Statuses:
 - `DELETE delete`: **Present**
 - Entity `customRoutes`: **Present** (base behavior)
 - OpenAPI / Swagger generation: **Present** (when enabled)
+- HATEOAS / pagination link metadata (e.g. `Link` header with `next`/`prev`) for paginated list flows: **v3 base**
 
 ### Auth and security
 - JWT auth: **Present** (when configured)

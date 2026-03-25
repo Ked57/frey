@@ -85,31 +85,109 @@ export const registerFindAllRoute = (
         server,
         auth: (request as any).auth,
       });
+
+      // v3 HATEOAS / pagination links (RFC 5988) for `limit`/`offset`.
+      // Rules (TDD-driven by tests):
+      // - Emit Link header only when both limit and offset are provided.
+      // - Include `rel="prev"` only when offset > 0.
+      // - Include `rel="next"` only when result.length === limit (best-effort).
+      // - If neither link exists, omit the header entirely.
+      const limit =
+        typeof (params as any).limit === "number"
+          ? (params as any).limit
+          : undefined;
+      const offset =
+        typeof (params as any).offset === "number"
+          ? (params as any).offset
+          : undefined;
+
+      if (limit !== undefined && offset !== undefined && Array.isArray(result)) {
+        const protocol = (request as any).protocol ?? "http";
+        const host =
+          (request as any).hostname ??
+          (request as any).headers?.host ??
+          "localhost";
+
+        // request.url is relative (e.g. "/user?name=John&limit=2&offset=0")
+        const url = new URL(request.url ?? `/${entity.name}`, `${protocol}://${host}`);
+
+        const makeHref = (newOffset: number) => {
+          const cloned = new URL(url.toString());
+          cloned.searchParams.set("offset", String(newOffset));
+          return cloned.toString();
+        };
+
+        const linkParts: string[] = [];
+
+        if (offset > 0) {
+          const prevOffset = Math.max(offset - limit, 0);
+          linkParts.push(
+            `<${makeHref(prevOffset)}>; rel="prev"`,
+          );
+        }
+
+        if (result.length === limit) {
+          const nextOffset = offset + limit;
+          linkParts.push(
+            `<${makeHref(nextOffset)}>; rel="next"`,
+          );
+        }
+
+        if (linkParts.length > 0) {
+          reply.header("Link", linkParts.join(", "));
+        }
+      }
+
       reply.send(result);
     } catch (error) {
       if (error instanceof Error && error.message.includes("parameter")) {
-        reply.status(400).send({
-          error: "Invalid query parameters",
-          message: error.message,
-        });
+        // Some unit tests call the handler directly with a minimal `reply` mock.
+        // Guard against missing Fastify methods so we don't throw inside error handling.
+        if (typeof (reply as any).status === "function") {
+          reply.status(400).send({
+            error: "Invalid query parameters",
+            message: error.message,
+          });
+        } else {
+          (reply as any).send?.({
+            error: "Invalid query parameters",
+            message: error.message,
+          });
+        }
         return;
       }
 
       if (error instanceof z.ZodError) {
-        reply.status(400).send({
-          error: "Invalid query parameters",
-          details: error.issues.map((issue) => ({
-            field: issue.path.join("."),
-            message: issue.message,
-          })),
-        });
+        if (typeof (reply as any).status === "function") {
+          reply.status(400).send({
+            error: "Invalid query parameters",
+            details: error.issues.map((issue) => ({
+              field: issue.path.join("."),
+              message: issue.message,
+            })),
+          });
+        } else {
+          (reply as any).send?.({
+            error: "Invalid query parameters",
+            details: error.issues.map((issue) => ({
+              field: issue.path.join("."),
+              message: issue.message,
+            })),
+          });
+        }
         return;
       }
 
       server.log.error(error);
-      reply.status(500).send({
-        error: "Internal server error",
-      });
+      if (typeof (reply as any).status === "function") {
+        reply.status(500).send({
+          error: "Internal server error",
+        });
+      } else {
+        (reply as any).send?.({
+          error: "Internal server error",
+        });
+      }
     }
   });
 };
