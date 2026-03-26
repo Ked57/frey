@@ -28,6 +28,7 @@ export type SwaggerConfig = {
   description?: string;
   version?: string;
   routePrefix?: string;
+  jsonRoute?: string;
   uiConfig?: {
     docExpansion?: "list" | "full" | "none";
     deepLinking?: boolean;
@@ -220,6 +221,11 @@ export const registerFrey = async <
 
       await fastify.register(swaggerUi.default, swaggerUiOptions);
     }
+
+    fastify.get(opts.swagger?.jsonRoute ?? "/openapi.json", async (_request, reply) => {
+      const openapiDocument = fastify.swagger();
+      reply.send(openapiDocument);
+    });
   }
 
   if (opts.websocket?.enabled) {
