@@ -29,6 +29,7 @@ export const buildTestApp = async <
     entities: opts.entities,
     swagger: opts.swagger,
     auth: opts.auth,
+    apiPrefix: opts.apiPrefix,
     cqrs: opts.cqrs,
     cache: opts.cache,
     cors: opts.cors,

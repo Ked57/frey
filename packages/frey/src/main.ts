@@ -53,6 +53,11 @@ export type ServerOptions<
 > = {
   port?: number;
   host?: string;
+  // Deprecated in favor of `api.routePrefix`, kept for backward compatibility.
+  apiPrefix?: string;
+  api?: {
+    routePrefix?: string;
+  };
   entities: T;
   swagger?: SwaggerConfig;
   auth?: AuthConfig;
@@ -233,19 +238,37 @@ export const registerFrey = async <
     });
   }
 
-  opts.entities.forEach((entity) => {
-    entities.set(entity.name, entity);
+  const registerEntityRoutes = (target: FastifyInstance) => {
+    opts.entities.forEach((entity) => {
+      entities.set(entity.name, entity);
 
-    // Register all CRUD routes with RBAC configuration
-    registerFindAllRoute(server, entity, opts.auth);
-    registerFindOneRoute(server, entity, opts.auth);
-    registerCreateRoute(server, entity, opts.auth);
-    registerUpdateRoute(server, entity, opts.auth);
-    registerDeleteRoute(server, entity, opts.auth);
+      // Register all CRUD routes with RBAC configuration
+      registerFindAllRoute(target, entity, opts.auth);
+      registerFindOneRoute(target, entity, opts.auth);
+      registerCreateRoute(target, entity, opts.auth);
+      registerUpdateRoute(target, entity, opts.auth);
+      registerDeleteRoute(target, entity, opts.auth);
 
-    // Register custom routes
-    registerCustomRoutes(server, entity, opts.auth);
-  });
+      // Register custom routes
+      registerCustomRoutes(target, entity, opts.auth);
+    });
+  };
+
+  const normalizedApiPrefix = (
+    opts.api?.routePrefix ?? opts.apiPrefix
+  )?.trim();
+  const hasApiPrefix =
+    typeof normalizedApiPrefix === "string" && normalizedApiPrefix.length > 0;
+  if (hasApiPrefix) {
+    const prefix = normalizedApiPrefix!.startsWith("/")
+      ? normalizedApiPrefix!
+      : `/${normalizedApiPrefix!}`;
+    await fastify.register(async (scopedServer) => {
+      registerEntityRoutes(scopedServer);
+    }, { prefix });
+  } else {
+    registerEntityRoutes(server);
+  }
 };
 
 export const startServer = async <
