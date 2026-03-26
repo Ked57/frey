@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { z } from "zod";
 import Fastify from "fastify";
-import { startServer, type ServerOptions } from "../../src/main.js";
+import { startServer, registerFrey, type ServerOptions } from "../../src/main.js";
 import { defineEntity, type Entity } from "../../src/entity.js";
 
 // Mock the process.exit to prevent actual exit during tests
@@ -164,6 +164,26 @@ describe("Server Setup", () => {
       expect(mockLogError).toHaveBeenCalledWith(
         new Error("Port already in use"),
       );
+    });
+  });
+
+  describe("registerFrey", () => {
+    it("should not call fastify.listen during registration-only setup", async () => {
+      const serverOptions: ServerOptions = {
+        entities: [mockEntity],
+        swagger: { enabled: false },
+      };
+
+      const mockListen = vi
+        .spyOn(fastify, "listen")
+        // If registerFrey triggers listen, fail immediately.
+        .mockImplementation(() => {
+          throw new Error("fastify.listen called");
+        });
+
+      await registerFrey(fastify, serverOptions);
+
+      expect(mockListen).not.toHaveBeenCalled();
     });
   });
 

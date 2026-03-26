@@ -1,4 +1,8 @@
-import { type FastifyInstance } from "fastify";
+import {
+  type FastifyInstance,
+  type FastifyRequest,
+  type FastifyReply,
+} from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import type { AuthConfig } from "../auth/types.js";
@@ -8,6 +12,12 @@ import { getWriteErrorResponses } from "../helpers/error-schemas.js";
 import { getAuthErrorResponses } from "../helpers/auth-error-schemas.js";
 import { createRouteAuthMiddleware } from "../auth/middleware.js";
 import { createRbacMiddleware } from "../auth/rbac.js";
+import { publishCqrsEvent } from "../cqrs/state.js";
+import type { CqrsEvent } from "../cqrs/types.js";
+import {
+  invalidateEntityListCache,
+  invalidatePrefixedCache,
+} from "../cache/state.js";
 
 export const registerUpdateRoute = (
   server: FastifyInstance,
@@ -82,7 +92,7 @@ export const registerUpdateRoute = (
   server.put(
     `/${entity.name}/:${entity.customId ?? "id"}`,
     routeOptions,
-    async (request, reply) => {
+    async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const urlParams = parseParams({
           params: request.params,
@@ -106,6 +116,20 @@ export const registerUpdateRoute = (
             server,
             auth: (request as any).auth,
           },
+        );
+        await publishCqrsEvent({
+          type: "command.executed",
+          entity: entity.name,
+          operation: "update",
+          payload: { id: idValue, ...bodyParams },
+        } satisfies CqrsEvent);
+        await invalidateEntityListCache(
+          (request as any).server ?? server,
+          entity.name,
+        );
+        await invalidatePrefixedCache(
+          (request as any).server ?? server,
+          `${entity.name}:findAll:`,
         );
         reply.send(result);
       } catch (error) {

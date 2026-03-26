@@ -1,4 +1,4 @@
-import { type FastifyInstance } from "fastify";
+import { type FastifyInstance, type FastifyRequest, type FastifyReply } from "fastify";
 import { z } from "zod";
 import type { Entity } from "../entity.js";
 import type { AuthConfig } from "../auth/types.js";
@@ -8,6 +8,9 @@ import { getWriteErrorResponses } from "../helpers/error-schemas.js";
 import { getAuthErrorResponses } from "../helpers/auth-error-schemas.js";
 import { createRouteAuthMiddleware } from "../auth/middleware.js";
 import { createRbacMiddleware } from "../auth/rbac.js";
+import type { CqrsEvent } from "../cqrs/types.js";
+import { publishCqrsEvent } from "../cqrs/state.js";
+import { invalidateEntityListCache, invalidatePrefixedCache } from "../cache/state.js";
 
 export const registerCreateRoute = (
   server: FastifyInstance,
@@ -78,7 +81,7 @@ export const registerCreateRoute = (
     routeOptions.preHandler = preHandlers;
   }
 
-  server.post(`/${entity.name}`, routeOptions, async (request, reply) => {
+  server.post(`/${entity.name}`, routeOptions, async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       const params = parseParams({
         params: request.body,
@@ -91,6 +94,20 @@ export const registerCreateRoute = (
         server,
         auth: (request as any).auth,
       });
+
+      // v3 CQRS slice: emit command event when enabled.
+      await publishCqrsEvent({
+        type: "command.executed",
+        entity: entity.name,
+        operation: "create",
+        payload: params,
+      } satisfies CqrsEvent);
+      await invalidateEntityListCache((request as any).server ?? server, entity.name);
+      await invalidatePrefixedCache(
+        (request as any).server ?? server,
+        `${entity.name}:findAll:`,
+      );
+
       reply.send(result);
     } catch (error) {
       if (error instanceof Error && error.message.includes("parameter")) {

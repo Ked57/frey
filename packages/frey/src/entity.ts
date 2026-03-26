@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
+import type { WebSocket } from "ws";
 import type { PrettyInfer } from "./helpers/types.ts";
 
 export type OrderField<Schema extends z.ZodObject<any>> =
@@ -59,6 +60,7 @@ export type EntityRbacConfig = {
 export type CustomRoute<Schema extends z.ZodObject<any>> = {
   path: string;
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
+  websocket?: boolean;
   auth?: {
     requireAuth?: boolean; // default: true when auth.enabled is true, false to opt-out
     jwtOnly?: boolean;
@@ -75,6 +77,11 @@ export type CustomRoute<Schema extends z.ZodObject<any>> = {
   registerRoute: (
     request: FastifyRequest,
     reply: FastifyReply,
+    context: { server: FastifyInstance; entity: Entity<Schema> },
+  ) => Promise<void> | void;
+  registerWebSocketRoute?: (
+    socket: WebSocket,
+    request: FastifyRequest,
     context: { server: FastifyInstance; entity: Entity<Schema> },
   ) => Promise<void> | void;
 };

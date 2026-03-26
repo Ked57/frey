@@ -5,6 +5,7 @@ import type { AuthConfig } from "../auth/types.js";
 import { getCustomRouteErrorResponses } from "../helpers/error-schemas.js";
 import { getAuthErrorResponses } from "../helpers/auth-error-schemas.js";
 import { createRouteAuthMiddleware } from "../auth/middleware.js";
+import type { WebSocket } from "ws";
 
 export const registerCustomRoutes = (
   server: FastifyInstance,
@@ -75,6 +76,33 @@ export const registerCustomRoutes = (
 
     if (preHandlers.length > 0) {
       routeOptions.preHandler = preHandlers;
+    }
+
+    if (customRoute.websocket === true && customRoute.registerWebSocketRoute) {
+      const wsRouteOptions: any = {
+        websocket: true,
+      };
+      if (preHandlers.length > 0) {
+        wsRouteOptions.preHandler = preHandlers;
+      }
+      wsRouteOptions.wsHandler = (socket: any, request: any) => {
+        return customRoute.registerWebSocketRoute!(socket, request, {
+          server,
+          entity,
+        });
+      };
+      server.route({
+        method: customRoute.method,
+        url: fullPath,
+        ...wsRouteOptions,
+        handler: (_request: any, reply: any) => {
+          reply.code(426).send({
+            error: "Upgrade Required",
+            message: "WebSocket upgrade required",
+          });
+        },
+      });
+      return;
     }
 
     (server[method] as any)(fullPath, routeOptions, async (request: any, reply: any) => {
