@@ -34,6 +34,7 @@ export const buildTestApp = async <
     cors: opts.cors,
     websocket: opts.websocket,
     health: opts.health,
+    rateLimit: opts.rateLimit,
   } satisfies ServerOptions<T>;
 
   await registerFrey(app, serverOptions);

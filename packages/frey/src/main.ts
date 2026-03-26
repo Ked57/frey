@@ -20,6 +20,7 @@ import type { CacheConfig } from "./cache/types.js";
 import { createInMemoryCacheStore } from "./cache/memory-store.js";
 import { setCacheConfig } from "./cache/state.js";
 import type { FastifyCorsOptions } from "@fastify/cors";
+import type { RateLimitPluginOptions } from "@fastify/rate-limit";
 
 export type SwaggerConfig = {
   enabled?: boolean;
@@ -39,6 +40,12 @@ export type CorsConfig = {
   origin?: string | string[] | boolean;
 };
 
+export type RateLimitConfig = {
+  enabled?: boolean;
+  max?: number;
+  timeWindow?: number | string;
+};
+
 export type ServerOptions<
   T extends readonly Entity<z.ZodObject<any>>[] = readonly Entity<
     z.ZodObject<any>
@@ -50,6 +57,7 @@ export type ServerOptions<
   swagger?: SwaggerConfig;
   auth?: AuthConfig;
   cors?: CorsConfig;
+  rateLimit?: RateLimitConfig;
   cqrs?: CqrsConfig;
   cache?: CacheConfig;
   websocket?: {
@@ -120,6 +128,15 @@ export const registerFrey = async <
     await fastify.register(cors.default, {
       origin: opts.cors?.origin ?? true,
     });
+  }
+
+  const rateLimitEnabled = opts.rateLimit?.enabled ?? false;
+  if (rateLimitEnabled) {
+    const rateLimit = await import("@fastify/rate-limit");
+    await fastify.register(rateLimit.default, {
+      max: opts.rateLimit?.max ?? 1000,
+      timeWindow: opts.rateLimit?.timeWindow ?? "1 minute",
+    } satisfies RateLimitPluginOptions);
   }
 
   // Auto-enable Swagger if swagger config is provided
