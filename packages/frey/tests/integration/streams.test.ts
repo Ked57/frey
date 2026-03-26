@@ -91,11 +91,12 @@ describe("stream surfaces integration", () => {
       swagger: { enabled: false },
       websocket: { enabled: true },
     });
-    const ws = await (app as any).injectWS("/stream/socket");
+    const ws = await (app as any).injectWS("/stream/socket", {
+      onOpen: (client: WebSocket) => {
+        client.send("ping");
+      },
+    });
     const message = await new Promise<string>((resolve, reject) => {
-      ws.on("open", () => {
-        ws.send("ping");
-      });
       ws.on("message", (data: WebSocket.RawData) => {
         resolve(data.toString());
         ws.close();

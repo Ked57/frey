@@ -55,6 +55,10 @@ export type ServerOptions<
   websocket?: {
     enabled?: boolean;
   };
+  health?: {
+    enabled?: boolean;
+    routePrefix?: string;
+  };
 };
 
 let server: FastifyInstance;
@@ -199,6 +203,17 @@ export const registerFrey = async <
   if (opts.websocket?.enabled) {
     const websocketPlugin = await import("@fastify/websocket");
     await fastify.register(websocketPlugin.default);
+  }
+
+  const healthEnabled = opts.health?.enabled ?? false;
+  if (healthEnabled) {
+    const routePrefix = opts.health?.routePrefix ?? "/health";
+    fastify.get(`${routePrefix}/live`, async (_request, reply) => {
+      reply.send({ status: "ok", check: "liveness" });
+    });
+    fastify.get(`${routePrefix}/ready`, async (_request, reply) => {
+      reply.send({ status: "ok", check: "readiness" });
+    });
   }
 
   opts.entities.forEach((entity) => {
