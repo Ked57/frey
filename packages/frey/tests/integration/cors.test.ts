@@ -13,7 +13,28 @@ describe("CORS integration", () => {
     findAll: async () => [{ id: "1", name: "John" }],
   });
 
-  it("does not include CORS headers when cors is disabled", async () => {
+  it("includes CORS headers by default", async () => {
+    const { app } = await buildTestApp({
+      entities: [entity] as const,
+      swagger: { enabled: false },
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/user",
+      headers: {
+        origin: "https://example.com",
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers["access-control-allow-origin"]).toBe(
+      "https://example.com",
+    );
+    await app.close();
+  });
+
+  it("does not include CORS headers when explicitly disabled", async () => {
     const { app } = await buildTestApp({
       entities: [entity] as const,
       cors: { enabled: false },
@@ -33,7 +54,7 @@ describe("CORS integration", () => {
     await app.close();
   });
 
-  it("includes CORS headers when cors is enabled", async () => {
+  it("includes CORS headers with configured origin when enabled", async () => {
     const { app } = await buildTestApp({
       entities: [entity] as const,
       cors: {

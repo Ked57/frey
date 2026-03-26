@@ -127,7 +127,7 @@ export const registerFrey = async <
     }
   }
 
-  const corsEnabled = opts.cors?.enabled ?? false;
+  const corsEnabled = opts.cors?.enabled ?? true;
   if (corsEnabled) {
     const cors = await import("@fastify/cors");
     await fastify.register(cors.default, {
